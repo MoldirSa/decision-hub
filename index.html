@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E1 · Frontend UX / UI — Biometric</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-elevated: #121a2b;
+      --bg-field: #0e1626;
+      --stroke: #2a3548;
+      --stroke-strong: #3d4b63;
+      --text: #f3f6fb;
+      --muted: #9aa6b8;
+      --faint: #6b778c;
+      --accent: #f5c518;
+      --accent-text: #121212;
+      --danger: #f87171;
+      --warn: #fbbf24;
+      --ok: #34d399;
+      --radius: 10px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.75rem;
+      font-weight: 650;
+    }
+    .lede {
+      margin: 0 0 20px;
+      color: var(--muted);
+      max-width: 64ch;
+      line-height: 1.45;
+    }
+
+    .banner {
+      background: #152238;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
+    .banner strong { color: var(--text); }
+
+    .group-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--faint);
+      margin: 14px 0 8px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab {
+      appearance: none;
+      border: 1px solid var(--stroke);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .tab:hover { border-color: var(--stroke-strong); color: var(--text); }
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 28px;
+      margin-top: 24px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* Phone / form frame */
+    .frame {
+      background: var(--bg-elevated);
+      border: 1px solid var(--stroke-strong);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
+    }
+    .frame-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px 6px;
+      color: var(--faint);
+      font-size: 0.78rem;
+    }
+    .frame-top .links { display: flex; gap: 12px; }
+    .frame-top .link-accent { color: var(--accent); }
+
+    .progress {
+      display: flex;
+      gap: 6px;
+      padding: 8px 18px 12px;
+    }
+    .progress span {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: #243044;
+    }
+    .progress span.on { background: var(--accent); }
+
+    .frame-body { padding: 8px 18px 20px; }
+    .frame-body h2 {
+      margin: 0 0 6px;
+      font-size: 1.45rem;
+      font-weight: 650;
+    }
+    .frame-body .sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .field .box {
+      border: 1px solid var(--stroke);
+      background: var(--bg-field);
+      border-radius: 8px;
+      padding: 11px 12px;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+    .field .box.ph { color: var(--faint); }
+    .field .box.focus { border-color: var(--accent); }
+    .field .hint {
+      margin-top: 5px;
+      font-size: 0.75rem;
+      color: var(--faint);
+    }
+
+    .otp {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .otp i {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      display: grid;
+      place-items: center;
+      font-style: normal;
+      font-size: 1.15rem;
+    }
+    .otp i.focus { border-color: var(--accent); }
+
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 8px 0 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .check .box {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--stroke-strong);
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .check a { color: var(--accent); text-decoration: none; }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: default;
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      flex: 1;
+      text-align: center;
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--stroke-strong);
+      white-space: nowrap;
+    }
+    .btn.full { width: 100%; display: block; text-align: center; }
+
+    .foot-note {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--faint);
+    }
+    .foot-note a { color: var(--accent); text-decoration: none; }
+
+    .alert {
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: #1a2438;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+    .alert.warn { border-color: #5b4a1e; background: #1f1a10; }
+    .alert.danger { border-color: #5c2a2a; background: #1f1214; }
+    .alert .title { font-weight: 600; margin-bottom: 4px; }
+    .alert .body { font-size: 0.86rem; color: var(--muted); line-height: 1.4; }
+
+    .balance-amt {
+      font-size: 2rem;
+      font-weight: 650;
+      margin: 4px 0;
+    }
+
+    .ledger-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .ledger-row .meta { font-size: 0.78rem; color: var(--faint); margin-top: 2px; }
+    .ledger-row .amt { text-align: right; font-weight: 600; font-size: 0.9rem; }
+    .ledger-row .after { font-size: 0.75rem; color: var(--faint); margin-top: 2px; text-align: right; }
+
+    .mode-card {
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .mode-card.selected {
+      border-color: var(--accent);
+      background: #1a2030;
+    }
+    .mode-card .name { font-weight: 600; margin-bottom: 4px; }
+    .mode-card .desc { font-size: 0.84rem; color: var(--muted); }
+
+    /* Side panel */
+    .side h3 {
+      margin: 0 0 4px;
+      font-size: 1.2rem;
+    }
+    .side .id {
+      color: var(--faint);
+      font-size: 0.8rem;
+      margin-bottom: 14px;
+    }
+    .side hr {
+      border: none;
+      border-top: 1px solid var(--stroke);
+      margin: 14px 0;
+    }
+    .notes { list-style: none; padding: 0; margin: 0; }
+    .notes li {
+      background: #152033;
+      border-radius: 6px;
+      padding: 9px 11px;
+      margin-bottom: 7px;
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .nav-btns button {
+      appearance: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav-btns .prev {
+      background: transparent;
+      border: 1px solid var(--stroke-strong);
+      color: var(--text);
+    }
+    .nav-btns .next {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: var(--accent-text);
+    }
+    .nav-btns button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .brand-yellow { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>E1 · Frontend UX / UI</h1>
+    <p class="lede">
+      Clickable screen specs for FE development (Biometric dark + yellow).
+      Registration legal path → Cabinet BALANCE → Flow <code>insufficient_balance</code>.
+    </p>
+
+    <div class="banner">
+      <strong>FE contract:</strong>
+      mandatory company fields + country policy + ToS/DPA → password;
+      cabinet balance / top-up / ledger / mode;
+      flow blocked with top-up CTA.
+    </div>
+
+    <div class="group-label">Registration</div>
+    <div class="tabs" id="tabs-reg"></div>
+    <div class="group-label">Cabinet</div>
+    <div class="tabs" id="tabs-cab"></div>
+    <div class="group-label">Flow</div>
+    <div class="tabs" id="tabs-flow"></div>
+
+    <div class="layout">
+      <div id="preview"></div>
+
+      <aside class="side">
+        <h3 id="side-title">—</h3>
+        <div class="id" id="side-id">—</div>
+        <hr />
+        <div style="font-weight:600;margin-bottom:8px;">UX notes</div>
+        <ul class="notes" id="side-notes"></ul>
+        <hr />
+        <div style="font-weight:600;margin-bottom:8px;">Nav</div>
+        <div class="nav-btns">
+          <button type="button" class="prev" id="btn-prev">Prev</button>
+          <button type="button" class="next" id="btn-next">Next screen</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <template id="tpl-reg-email">
+    <div class="frame">
+      <div class="frame-top">
+        <span>Biometric · Sign up</span>
+        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
+      </div>
+      <div class="progress" data-filled="1" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Sign up to <span class="brand-yellow">Biometric</span></h2>
+        <p class="sub">Enter your corporate email to start registration.</p>
+        <div class="field">
+          <label>Work email (required)</label>
+          <div class="box focus">ops@acme.com</div>
+        </div>
+        <div class="btn primary full">Continue</div>
+        <p class="foot-note">Already have an account? <a href="#">Sign in</a></p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-reg-otp">
+    <div class="frame">
+      <div class="frame-top">
+        <span>Biometric · Sign up</span>
+        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
+      </div>
+      <div class="progress" data-filled="2" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Confirm email</h2>
+        <p class="sub">Enter the code we sent to your email.</p>
+        <p class="sub" style="margin-top:-8px;">A verification code was sent to <strong>ops@acme.com</strong>.</p>
+        <label style="font-size:0.82rem;color:var(--muted);">Verification code</label>
+        <div class="otp" style="margin-top:6px;">
+          <i>8</i><i>6</i><i>4</i><i class="focus">9</i>
+        </div>
+        <div class="actions">
+          <div class="btn ghost">&lt; Back</div>
+          <div class="btn primary">Confirm</div>
+        </div>
+        <p class="foot-note">Resend in 37s</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-reg-company">
+    <div class="frame">
+      <div class="frame-top">
+        <span>Biometric · Sign up</span>
+        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
+      </div>
+      <div class="progress" data-filled="3" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Company data</h2>
+        <p class="sub">Fill in your organization details.</p>
+        <div class="field">
+          <label>Company name (required)</label>
+          <div class="box focus">Acme KYC LLP</div>
+        </div>
+        <div class="field">
+          <label>Industry (required)</label>
+          <div class="box ph">Select industry</div>
+        </div>
+        <div class="field">
+          <label>Client type (required)</label>
+          <div class="box">Legal entity (ТОО / Company)</div>
+          <div class="hint">Global enum · individuals not allowed</div>
+        </div>
+        <div class="field">
+          <label>BIN / Tax ID (required)</label>
+          <div class="box ph">BIN</div>
+        </div>
+        <div class="field">
+          <label>Country (required)</label>
+          <div class="box ph">Select country</div>
+          <div class="hint">Manual select · IP does not prefill country</div>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <div class="box ph">Optional</div>
+        </div>
+        <div class="check">
+          <div class="box"></div>
+          <div>I agree to the <a href="#">Terms and Privacy Policy (DPA)</a></div>
+        </div>
+        <div class="actions">
+          <div class="btn ghost">&lt; Back</div>
+          <div class="btn primary">Continue</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-reg-deny">
+    <div class="frame">
+      <div class="frame-top"><span>Biometric · Sign up</span></div>
+      <div class="progress" data-filled="3" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Service not available</h2>
+        <p class="sub">Registration cannot continue for this country.</p>
+        <div class="alert danger">
+          <div class="title">Country: Germany (DE)</div>
+          <div class="body">The service is not offered to organizations from the EU / UK / Switzerland.</div>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <div class="box">Germany</div>
+        </div>
+        <div class="btn primary full">Change country</div>
+        <p class="foot-note">Terminal · no account · reason=country_deny_eu_uk_ch</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-reg-hold">
+    <div class="frame">
+      <div class="frame-top"><span>Biometric · Sign up</span></div>
+      <div class="progress" data-filled="3" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Registration on hold</h2>
+        <p class="sub">Onboarding is temporarily unavailable for this country.</p>
+        <div class="alert warn">
+          <div class="title">Country: Brazil (BR)</div>
+          <div class="body">Local presence / regulatory review required. Same hold UX for CN, ZA, TR, KR, SA, BR, IN.</div>
+        </div>
+        <div class="btn ghost full">&lt; Back to country</div>
+        <p class="foot-note">Country stays in dropdown · waitlist optional P2</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-reg-password">
+    <div class="frame">
+      <div class="frame-top"><span>Biometric · Sign up</span></div>
+      <div class="progress" data-filled="5" data-total="5"></div>
+      <div class="frame-body">
+        <h2>Set password</h2>
+        <p class="sub">Create a secure password for your account.</p>
+        <p class="sub" style="margin-top:-10px;font-size:0.82rem;">Only after country allow · sanctions clear · ToS+DPA accepted.</p>
+        <div class="field">
+          <label>Password</label>
+          <div class="box focus ph">Enter password</div>
+        </div>
+        <div class="field">
+          <label>Confirm password</label>
+          <div class="box ph">Repeat password</div>
+        </div>
+        <div class="actions">
+          <div class="btn ghost">&lt; Back</div>
+          <div class="btn primary">Complete registration</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-lk-balance">
+    <div class="frame">
+      <div class="frame-top">
+        <span>Cabinet · Balance</span>
+        <span class="link-accent">BALANCE</span>
+      </div>
+      <div class="frame-body">
+        <h2>Balance</h2>
+        <p class="sub">Prepaid credits · billing mode BALANCE</p>
+        <div class="alert warn">
+          <div class="title">Low balance</div>
+          <div class="body">Balance is below $5.00. Top up to keep running flows.</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--muted);">Available</div>
+        <div class="balance-amt">$4.20</div>
+        <div style="font-size:0.78rem;color:var(--faint);margin-bottom:14px;">USD · is_low=true · threshold=5.00</div>
+        <div class="actions">
+          <div class="btn primary">Top up</div>
+          <div class="btn ghost">Transactions</div>
+        </div>
+        <div style="margin-top:10px;" class="btn ghost full">Billing mode: BALANCE</div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-lk-topup">
+    <div class="frame">
+      <div class="frame-top"><span>Cabinet · Top-up</span></div>
+      <div class="frame-body">
+        <h2>Top up balance</h2>
+        <p class="sub">Pay by card via Stripe Checkout · min $10</p>
+        <div class="field">
+          <label>Amount (USD)</label>
+          <div class="box focus">50.00</div>
+          <div class="hint">Min 10 · Max 1,000,000</div>
+        </div>
+        <div class="btn primary full">Continue to Stripe</div>
+        <p class="foot-note">After return: refetch GET /balance/ — webhook may lag; show pending state.</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-lk-ledger">
+    <div class="frame">
+      <div class="frame-top"><span>Cabinet · Transactions</span></div>
+      <div class="frame-body">
+        <h2>Transactions</h2>
+        <p class="sub">Balance ledger</p>
+        <div class="ledger-row">
+          <div><div>TOPUP</div><div class="meta">Stripe · today</div></div>
+          <div><div class="amt" style="color:var(--ok)">+50.00</div><div class="after">bal 54.20</div></div>
+        </div>
+        <div class="ledger-row">
+          <div><div>CHARGE</div><div class="meta">Documents · flow…</div></div>
+          <div><div class="amt">−0.25</div><div class="after">bal 4.20</div></div>
+        </div>
+        <div class="ledger-row">
+          <div><div>ADJUSTMENT</div><div class="meta">Admin · invoice #42</div></div>
+          <div><div class="amt" style="color:var(--ok)">+1.00</div><div class="after">bal 4.45</div></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-lk-mode">
+    <div class="frame">
+      <div class="frame-top"><span>Cabinet · Billing mode</span></div>
+      <div class="frame-body">
+        <h2>Billing mode</h2>
+        <p class="sub">SUBSCRIPTION unchanged · BALANCE is prepaid USD</p>
+        <div class="mode-card">
+          <div class="name">SUBSCRIPTION</div>
+          <div class="desc">Technology quotas · existing renewals</div>
+        </div>
+        <div class="mode-card selected">
+          <div class="name">BALANCE</div>
+          <div class="desc">Pay per technology run from USD balance</div>
+        </div>
+        <div class="alert warn">
+          <div class="title">Warning</div>
+          <div class="body">Subscription for Documents keeps expiring on 2026-12-01 while on balance billing.</div>
+        </div>
+        <div class="btn primary full">Switch to BALANCE</div>
+        <p class="foot-note">400 if active flow sessions · or no quota to switch back</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-flow-insuff">
+    <div class="frame">
+      <div class="frame-top"><span>Flow · Start session</span></div>
+      <div class="frame-body">
+        <h2>Start flow</h2>
+        <p class="sub">BALANCE org · session create blocked</p>
+        <div class="alert danger">
+          <div class="title">Insufficient funds</div>
+          <div class="body">Not enough balance to start this flow. Top up your balance to continue.</div>
+          <div class="body" style="margin-top:8px;font-size:0.78rem;">
+            API: 400 · code <strong>insufficient_balance</strong><br />
+            detail: Insufficient balance to start the flow
+          </div>
+        </div>
+        <div class="btn primary full">Top up balance</div>
+        <div style="margin-top:8px;" class="btn ghost full">Cancel</div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const SCREENS = [
+      { id: "reg-email", group: "Registration", label: "Work email", step: "1/5",
+        notes: ["Language from IP, default English", "Corporate email first gate"] },
+      { id: "reg-otp", group: "Registration", label: "Confirm email", step: "2/5",
+        notes: ["4-digit code AS-IS", "Resend cooldown preserved"] },
+      { id: "reg-company", group: "Registration", label: "Company data", step: "3/5",
+        notes: ["All fields required except phone", "Client type global enum + localized labels", "ToS+DPA before password"] },
+      { id: "reg-deny", group: "Registration", label: "Country deny", step: "3/5",
+        notes: ["EU/UK/CH hard deny copy", "No account · change country CTA"] },
+      { id: "reg-hold", group: "Registration", label: "Country hold", step: "3/5",
+        notes: ["Hold countries visible in dropdown", "Unified hold message"] },
+      { id: "reg-password", group: "Registration", label: "Set password", step: "5/5",
+        notes: ["Only after legal gates", "Complete → LK"] },
+      { id: "lk-balance", group: "Cabinet", label: "Balance", step: "LK",
+        notes: ["GET /balance/", "is_low banner under $5", "CTA Top up"] },
+      { id: "lk-topup", group: "Cabinet", label: "Top-up", step: "LK",
+        notes: ["POST /topup/ → Stripe Checkout", "Min $10"] },
+      { id: "lk-ledger", group: "Cabinet", label: "Transactions", step: "LK",
+        notes: ["TOPUP / CHARGE / ADJUSTMENT / REFUND", "Signed amounts"] },
+      { id: "lk-mode", group: "Cabinet", label: "Billing mode", step: "LK",
+        notes: ["Show warnings[] from API", "Handle switch 400s"] },
+      { id: "flow-insuff", group: "Flow", label: "Insufficient balance", step: "Flow",
+        notes: ["No session created", "CTA → top-up screen"] },
+    ];
+
+    let current = "reg-company";
+
+    function fillProgress(root) {
+      root.querySelectorAll(".progress").forEach((el) => {
+        const filled = Number(el.dataset.filled || 0);
+        const total = Number(el.dataset.total || 5);
+        el.innerHTML = "";
+        for (let i = 0; i < total; i++) {
+          const s = document.createElement("span");
+          if (i < filled) s.classList.add("on");
+          el.appendChild(s);
+        }
+      });
+    }
+
+    function renderTabs() {
+      const map = {
+        Registration: document.getElementById("tabs-reg"),
+        Cabinet: document.getElementById("tabs-cab"),
+        Flow: document.getElementById("tabs-flow"),
+      };
+      Object.values(map).forEach((el) => (el.innerHTML = ""));
+      SCREENS.forEach((s) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tab" + (s.id === current ? " active" : "");
+        btn.textContent = s.label;
+        btn.addEventListener("click", () => show(s.id));
+        map[s.group].appendChild(btn);
+      });
+    }
+
+    function show(id) {
+      current = id;
+      const meta = SCREENS.find((s) => s.id === id);
+      const tpl = document.getElementById("tpl-" + id);
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+      const node = tpl.content.cloneNode(true);
+      preview.appendChild(node);
+      fillProgress(preview);
+
+      document.getElementById("side-title").textContent = meta.label;
+      document.getElementById("side-id").textContent = "Step " + meta.step + " · id=" + meta.id;
+      const notes = document.getElementById("side-notes");
+      notes.innerHTML = "";
+      meta.notes.forEach((n) => {
+        const li = document.createElement("li");
+        li.textContent = n;
+        notes.appendChild(li);
+      });
+
+      const idx = SCREENS.findIndex((s) => s.id === id);
+      document.getElementById("btn-prev").disabled = idx === 0;
+      document.getElementById("btn-next").disabled = idx === SCREENS.length - 1;
+      renderTabs();
+    }
+
+    document.getElementById("btn-prev").addEventListener("click", () => {
+      const i = SCREENS.findIndex((s) => s.id === current);
+      if (i > 0) show(SCREENS[i - 1].id);
+    });
+    document.getElementById("btn-next").addEventListener("click", () => {
+      const i = SCREENS.findIndex((s) => s.id === current);
+      if (i < SCREENS.length - 1) show(SCREENS[i + 1].id);
+    });
+
+    show(current);
+  </script>
+</body>
+</html>
