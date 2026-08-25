@@ -1,0 +1,8 @@
+# Local notes, backups, and drafts — not part of the public site
+*.ipynb
+index.e1-frontend-backup.html
+"# Biometric Integration AI Support Platf.md"
+Transaction model/
+*.png
+.DS_Store
+Thumbs.db

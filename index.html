@@ -1,749 +1,2129 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>E1 · Frontend UX / UI — Biometric</title>
-  <style>
-    :root {
-      --bg: #0b1220;
-      --bg-elevated: #121a2b;
-      --bg-field: #0e1626;
-      --stroke: #2a3548;
-      --stroke-strong: #3d4b63;
-      --text: #f3f6fb;
-      --muted: #9aa6b8;
-      --faint: #6b778c;
-      --accent: #f5c518;
-      --accent-text: #121212;
-      --danger: #f87171;
-      --warn: #fbbf24;
-      --ok: #34d399;
-      --radius: 10px;
-      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Hub — Transactional Model Grooming</title>
+<style>
+/* ============================================================
+   RESET & DESIGN TOKENS
+   ============================================================ */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  font-size:14px;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p,ul,ol,fieldset,form{ margin:0; padding:0; }
+ul{ list-style:none; }
+button{ font-family:inherit; cursor:pointer; }
+input,select,textarea,button{ font-family:inherit; font-size:inherit; color:inherit; }
+a{ color:inherit; }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+:root{
+  --bg:#fafafa;
+  --bg-elevated:#ffffff;
+  --sidebar-bg:#f7f7f8;
+  --border:#e4e4e7;
+  --border-strong:#d4d4d8;
+  --text:#18181b;
+  --text-muted:#71717a;
+  --text-faint:#a1a1aa;
+  --accent:#3b82f6;
+  --accent-fg:#ffffff;
+  --danger:#dc2626;
+  --radius-sm:6px;
+  --radius-md:10px;
+  --radius-lg:14px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+}
 
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 28px 20px 48px;
-    }
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-thumb{ background:#d4d4d8; border-radius:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 1.75rem;
-      font-weight: 650;
-    }
-    .lede {
-      margin: 0 0 20px;
-      color: var(--muted);
-      max-width: 64ch;
-      line-height: 1.45;
-    }
+.muted{ color:var(--text-muted); font-size:12.5px; }
+.secondary-ui{ transition:opacity .15s; }
 
-    .banner {
-      background: #152238;
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-bottom: 22px;
-      line-height: 1.4;
-    }
-    .banner strong { color: var(--text); }
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+.app{ display:flex; height:100vh; overflow:hidden; }
 
-    .group-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--faint);
-      margin: 14px 0 8px;
-    }
+.sidebar{
+  width:240px; flex:0 0 240px;
+  background:var(--sidebar-bg);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  padding:16px 12px;
+  overflow-y:auto;
+}
+.sidebar-brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 18px; }
+.brand-mark{
+  width:32px; height:32px; border-radius:8px;
+  background:var(--text); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:13px; flex:none;
+}
+.brand-title{ font-weight:600; font-size:14px; line-height:1.2; }
+.brand-sub{ font-size:11px; color:var(--text-muted); margin-top:1px; }
 
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+.sidebar-nav{ display:flex; flex-direction:column; gap:2px; }
+.nav-item{
+  display:flex; align-items:center; gap:10px;
+  width:100%; text-align:left; border:none; background:transparent;
+  padding:8px 10px; border-radius:var(--radius-sm);
+  color:var(--text-muted); font-size:13.5px; font-weight:500;
+  transition:background .12s,color .12s;
+}
+.nav-item:hover{ background:#eeeef0; color:var(--text); }
+.nav-item.active{ background:var(--text); color:#fff; }
+.nav-icon{ width:18px; text-align:center; flex:none; font-size:13px; }
 
-    .tab {
-      appearance: none;
-      border: 1px solid var(--stroke);
-      background: transparent;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-    .tab:hover { border-color: var(--stroke-strong); color: var(--text); }
-    .tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--accent-text);
-      font-weight: 600;
-    }
+.main-col{ flex:1; display:flex; flex-direction:column; min-width:0; }
 
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(320px, 440px) 1fr;
-      gap: 28px;
-      margin-top: 24px;
-      align-items: start;
-    }
-    @media (max-width: 860px) {
-      .layout { grid-template-columns: 1fr; }
-    }
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 20px; border-bottom:1px solid var(--border);
+  background:var(--bg-elevated);
+  flex:none;
+}
+.search-wrap{ flex:1; max-width:480px; }
+#search-input{
+  width:100%; padding:8px 12px; border:1px solid var(--border);
+  border-radius:var(--radius-sm); background:var(--bg);
+  outline:none; transition:border-color .12s;
+}
+#search-input:focus{ border-color:var(--accent); background:#fff; }
+.topbar-actions{ display:flex; align-items:center; gap:8px; margin-left:auto; }
 
-    /* Phone / form frame */
-    .frame {
-      background: var(--bg-elevated);
-      border: 1px solid var(--stroke-strong);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
-    }
-    .frame-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 18px 6px;
-      color: var(--faint);
-      font-size: 0.78rem;
-    }
-    .frame-top .links { display: flex; gap: 12px; }
-    .frame-top .link-accent { color: var(--accent); }
+#main-content{ flex:1; overflow-y:auto; padding:24px 28px 60px; }
 
-    .progress {
-      display: flex;
-      gap: 6px;
-      padding: 8px 18px 12px;
-    }
-    .progress span {
-      flex: 1;
-      height: 4px;
-      border-radius: 2px;
-      background: #243044;
-    }
-    .progress span.on { background: var(--accent); }
+.view-header{ margin-bottom:18px; }
+.view-header h1{ font-size:21px; font-weight:650; letter-spacing:-.01em; }
+.view-header p{ margin-top:4px; }
 
-    .frame-body { padding: 8px 18px 20px; }
-    .frame-body h2 {
-      margin: 0 0 6px;
-      font-size: 1.45rem;
-      font-weight: 650;
-    }
-    .frame-body .sub {
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.4;
-    }
+/* ============================================================
+   BUTTONS / BADGES / TAGS
+   ============================================================ */
+.btn-primary,.btn-secondary,.btn-danger,.btn-mini{
+  border-radius:var(--radius-sm); border:1px solid transparent;
+  padding:7px 13px; font-size:13px; font-weight:500;
+  white-space:nowrap; transition:background .12s,border-color .12s,opacity .12s;
+}
+.btn-primary{ background:var(--text); color:#fff; }
+.btn-primary:hover{ opacity:.85; }
+.btn-secondary{ background:#fff; border-color:var(--border-strong); color:var(--text); }
+.btn-secondary:hover{ background:#f4f4f5; }
+.btn-secondary.active{ background:var(--text); color:#fff; border-color:var(--text); }
+.btn-danger{ background:#fff; border-color:#fecaca; color:var(--danger); }
+.btn-danger:hover{ background:#fef2f2; }
+.btn-mini{ padding:5px 10px; font-size:12px; background:#fff; border-color:var(--border-strong); }
+.btn-mini:hover{ background:#f4f4f5; }
+.link-btn{ border:none; background:none; color:var(--accent); font-size:12.5px; text-decoration:underline; padding:0; }
+.icon-btn{
+  border:none; background:transparent; width:30px; height:30px;
+  border-radius:var(--radius-sm); font-size:16px; color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center; flex:none;
+}
+.icon-btn:hover{ background:#f0f0f1; color:var(--text); }
+.icon-btn.danger:hover{ background:#fef2f2; color:var(--danger); }
+.mobile-only{ display:none; }
 
-    .field { margin-bottom: 14px; }
-    .field label {
-      display: block;
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .field .box {
-      border: 1px solid var(--stroke);
-      background: var(--bg-field);
-      border-radius: 8px;
-      padding: 11px 12px;
-      font-size: 0.92rem;
-      color: var(--text);
-    }
-    .field .box.ph { color: var(--faint); }
-    .field .box.focus { border-color: var(--accent); }
-    .field .hint {
-      margin-top: 5px;
-      font-size: 0.75rem;
-      color: var(--faint);
-    }
+.badge{
+  display:inline-block; padding:3px 9px; border-radius:999px;
+  font-size:11.5px; font-weight:600; white-space:nowrap;
+}
+.tag{
+  display:inline-flex; align-items:center; gap:5px;
+  background:#f0f0f1; border-radius:999px; padding:3px 10px;
+  font-size:12px; color:var(--text);
+}
+.tag.mini{ padding:2px 8px; font-size:11px; cursor:pointer; }
+.tag.mini:hover{ background:#e4e4e7; }
+.tag button{ border:none; background:none; color:var(--text-muted); font-size:13px; line-height:1; padding:0; }
+.tag button:hover{ color:var(--danger); }
+.dept-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; flex:none; }
+.dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
 
-    .otp {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .otp i {
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
-      border: 1px solid var(--stroke);
-      display: grid;
-      place-items: center;
-      font-style: normal;
-      font-size: 1.15rem;
-    }
-    .otp i.focus { border-color: var(--accent); }
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filter-bar{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.filter-bar select{
+  padding:6px 10px; border:1px solid var(--border-strong); border-radius:var(--radius-sm);
+  background:#fff; color:var(--text); font-size:12.5px;
+}
 
-    .check {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      margin: 8px 0 16px;
-      font-size: 0.88rem;
-      color: var(--muted);
-    }
-    .check .box {
-      width: 16px;
-      height: 16px;
-      border: 1px solid var(--stroke-strong);
-      border-radius: 3px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .check a { color: var(--accent); text-decoration: none; }
+/* ============================================================
+   STAT GRID / PANELS / READINESS BARS  (Overview + CEO)
+   ============================================================ */
+.stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+.stat-tile{
+  background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:var(--radius-md); padding:14px 16px;
+}
+.stat-value{ font-size:24px; font-weight:700; letter-spacing:-.02em; }
+.stat-label{ font-size:12.5px; color:var(--text-muted); margin-top:2px; }
+.stat-tile.approved .stat-value{ color:#16a34a; }
+.stat-tile.discussion .stat-value{ color:#d97706; }
+.stat-tile.blocked .stat-value{ color:#dc2626; }
 
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .btn {
-      appearance: none;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      cursor: default;
-    }
-    .btn.primary {
-      background: var(--accent);
-      color: var(--accent-text);
-      flex: 1;
-      text-align: center;
-    }
-    .btn.ghost {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--stroke-strong);
-      white-space: nowrap;
-    }
-    .btn.full { width: 100%; display: block; text-align: center; }
+.panel{
+  background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:18px 20px; margin-bottom:18px;
+}
+.panel h2{ font-size:15px; font-weight:650; margin-bottom:14px; }
+.panel-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 
-    .foot-note {
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: var(--faint);
-    }
-    .foot-note a { color: var(--accent); text-decoration: none; }
+.readiness-overall{ display:flex; align-items:center; gap:12px; margin-bottom:16px; font-weight:600; font-size:13px; }
+.readiness-row{ display:grid; grid-template-columns:150px 1fr 90px; align-items:center; gap:12px; margin-bottom:10px; font-size:13px; }
+.readiness-label{ display:flex; align-items:center; }
+.readiness-bar{ height:8px; background:#eee; border-radius:999px; overflow:hidden; flex:1; }
+.readiness-fill{ height:100%; background:var(--text); border-radius:999px; transition:width .2s; }
+.readiness-pct{ text-align:right; font-variant-numeric:tabular-nums; }
 
-    .alert {
-      border-radius: 8px;
-      border: 1px solid var(--stroke);
-      background: #1a2438;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-    }
-    .alert.warn { border-color: #5b4a1e; background: #1f1a10; }
-    .alert.danger { border-color: #5c2a2a; background: #1f1214; }
-    .alert .title { font-weight: 600; margin-bottom: 4px; }
-    .alert .body { font-size: 0.86rem; color: var(--muted); line-height: 1.4; }
+.mini-stat-row{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f1f2; font-size:13px; }
+.mini-stat-row:last-child{ border-bottom:none; }
+.blocker-row{
+  display:flex; align-items:center; gap:8px; padding:8px 6px;
+  border-radius:var(--radius-sm); cursor:pointer; font-size:13px;
+}
+.blocker-row:hover{ background:#f6f6f7; }
+.blocker-title{ font-weight:500; flex:1; }
 
-    .balance-amt {
-      font-size: 2rem;
-      font-weight: 650;
-      margin: 4px 0;
-    }
+/* ============================================================
+   CARD TILES / GRID
+   ============================================================ */
+.tile-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+.card-tile{
+  background:var(--bg-elevated); border:1px solid var(--border);
+  border-radius:var(--radius-md); padding:14px 16px; cursor:pointer;
+  transition:box-shadow .12s,border-color .12s;
+}
+.card-tile:hover{ box-shadow:var(--shadow-md); border-color:var(--border-strong); }
+.card-tile.dragging{ opacity:.4; }
+.tile-top{ display:flex; gap:6px; margin-bottom:8px; }
+.card-tile h3{ font-size:14px; font-weight:600; margin-bottom:4px; line-height:1.3; }
+.tile-desc{
+  font-size:12.5px; color:var(--text-muted); margin-bottom:10px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.tile-meta{ display:flex; align-items:center; flex-wrap:wrap; font-size:11.5px; color:var(--text-muted); }
+.tile-progress{ height:5px; background:#eee; border-radius:999px; overflow:hidden; margin-top:10px; }
+.tile-progress-bar{ height:100%; background:#16a34a; }
+.tile-progress-label{ display:block; margin-top:4px; font-size:11px; }
 
-    .ledger-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      border: 1px solid var(--stroke);
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-    .ledger-row .meta { font-size: 0.78rem; color: var(--faint); margin-top: 2px; }
-    .ledger-row .amt { text-align: right; font-weight: 600; font-size: 0.9rem; }
-    .ledger-row .after { font-size: 0.75rem; color: var(--faint); margin-top: 2px; text-align: right; }
+/* ============================================================
+   KANBAN
+   ============================================================ */
+.kanban-board{ display:flex; gap:16px; align-items:flex-start; overflow-x:auto; padding-bottom:20px; }
+.kanban-col{ background:#f4f4f5; border-radius:var(--radius-lg); padding:12px; width:290px; flex:0 0 290px; }
+.kanban-col-head{ display:flex; align-items:center; gap:8px; padding:4px 6px 10px; }
+.kanban-col-head h3{ font-size:13px; font-weight:650; }
+.kanban-col-head .count{ margin-left:auto; font-size:12px; color:var(--text-muted); background:#e4e4e7; padding:1px 8px; border-radius:999px; }
+.kanban-col-body{ display:flex; flex-direction:column; gap:10px; min-height:80px; border-radius:var(--radius-md); transition:background .12s,outline .12s; padding:2px; }
+.kanban-col-body.drag-over{ background:#eef2ff; outline:2px dashed #a5b4fc; }
 
-    .mode-card {
-      border: 1px solid var(--stroke);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 8px;
-    }
-    .mode-card.selected {
-      border-color: var(--accent);
-      background: #1a2030;
-    }
-    .mode-card .name { font-weight: 600; margin-bottom: 4px; }
-    .mode-card .desc { font-size: 0.84rem; color: var(--muted); }
+/* ============================================================
+   DEVELOPMENT AUTO-VIEW
+   ============================================================ */
+.dev-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-bottom:22px; align-items:start; }
+.dev-col{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; }
+.dev-col h3{ font-size:13px; font-weight:650; margin-bottom:10px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); }
+.dev-req{ padding:9px 0; border-bottom:1px solid #f1f1f2; }
+.dev-req:last-child{ border-bottom:none; }
+.dev-req-label{ font-size:13px; font-weight:600; }
+.dev-req-group{ font-size:11px; margin:1px 0 6px; }
+.dev-req-sources{ display:flex; flex-wrap:wrap; gap:5px; }
 
-    /* Side panel */
-    .side h3 {
-      margin: 0 0 4px;
-      font-size: 1.2rem;
-    }
-    .side .id {
-      color: var(--faint);
-      font-size: 0.8rem;
-      margin-bottom: 14px;
-    }
-    .side hr {
-      border: none;
-      border-top: 1px solid var(--stroke);
-      margin: 14px 0;
-    }
-    .notes { list-style: none; padding: 0; margin: 0; }
-    .notes li {
-      background: #152033;
-      border-radius: 6px;
-      padding: 9px 11px;
-      margin-bottom: 7px;
-      font-size: 0.86rem;
-      color: var(--muted);
-      line-height: 1.35;
-    }
+/* ============================================================
+   DEPENDENCY GRAPH
+   ============================================================ */
+.graph-wrap{ position:relative; overflow:auto; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--bg-elevated); padding:32px; min-height:300px; }
+#graph-svg{ position:absolute; top:0; left:0; z-index:0; pointer-events:none; }
+.graph-columns{ display:flex; gap:70px; position:relative; z-index:1; }
+.graph-col{ display:flex; flex-direction:column; gap:22px; }
+.graph-node{
+  width:190px; background:#fff; border:1.5px solid var(--border-strong); border-left-width:4px;
+  border-radius:var(--radius-md); padding:10px 12px; cursor:pointer; box-shadow:var(--shadow-sm);
+}
+.graph-node:hover{ box-shadow:var(--shadow-md); }
+.graph-node-dot{ width:7px; height:7px; border-radius:50%; display:inline-block; margin-bottom:6px; }
+.graph-node-title{ font-size:12.5px; font-weight:600; line-height:1.3; }
+.graph-node-dept{ font-size:10.5px; color:var(--text-muted); margin-top:3px; }
 
-    .nav-btns {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .nav-btns button {
-      appearance: none;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.88rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .nav-btns .prev {
-      background: transparent;
-      border: 1px solid var(--stroke-strong);
-      color: var(--text);
-    }
-    .nav-btns .next {
-      background: var(--accent);
-      border: 1px solid var(--accent);
-      color: var(--accent-text);
-    }
-    .nav-btns button:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
+/* ============================================================
+   MERMAID INTERACTION SCHEME
+   ============================================================ */
+.mermaid-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; background:var(--bg-elevated); }
+.mermaid-wrap .mermaid{ display:flex; justify-content:center; }
+.mermaid-wrap svg{ max-width:none; }
+.mermaid-source-input{
+  width:100%; min-height:220px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px; line-height:1.5; padding:10px 12px; border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm); resize:vertical; background:#fff; color:var(--text);
+}
+.tab-bar{ display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.tab-bar .btn-mini.active{ background:var(--text); color:#fff; border-color:var(--text); }
 
-    .screen { display: none; }
-    .screen.active { display: block; }
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.35);
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:5vh 16px; overflow-y:auto; z-index:1000;
+}
+.modal{
+  background:#fff; border-radius:var(--radius-lg); width:640px; max-width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.25); padding:22px 24px 26px;
+}
+.modal-header{ display:flex; align-items:flex-start; gap:10px; margin-bottom:4px; }
+.modal-header-main{ display:flex; align-items:flex-start; gap:8px; flex:1; }
+.modal-header h2{ font-size:19px; font-weight:650; line-height:1.3; outline:none; cursor:text; }
+.modal-header h2:hover{ background:#f7f7f8; border-radius:4px; }
+.modal-meta{ margin-bottom:16px; }
+.modal-fields{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+.field{ margin-bottom:14px; }
+.field > label{ display:block; font-size:11.5px; font-weight:650; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); margin-bottom:6px; }
+.field select,.field input[type=text],.field textarea{
+  width:100%; padding:7px 9px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); background:#fff;
+}
+.editable-text{ padding:5px 7px; border-radius:var(--radius-sm); cursor:text; min-height:20px; white-space:pre-wrap; }
+.editable-text:hover{ background:#f7f7f8; }
+.editable-text.block{ line-height:1.5; }
+.inline-edit-box{ width:100%; padding:6px 8px; border:1px solid var(--accent); border-radius:var(--radius-sm); outline:none; }
+.country-tags{ display:flex; gap:6px; margin:-6px 0 14px; flex-wrap:wrap; }
 
-    .brand-yellow { color: var(--accent); }
-  </style>
+.dep-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.dep-tag{ background:#eef2ff; color:#3730a3; }
+.field select#dep-select,.dep-chips + select{ max-width:280px; }
+
+.chk-group{ border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:10px; }
+.chk-group-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.chk-group-head h4{ font-size:12.5px; font-weight:650; cursor:text; padding:2px 4px; border-radius:4px; }
+.chk-group-head h4:hover{ background:#f7f7f8; }
+.chk-items{ display:flex; flex-direction:column; gap:2px; }
+.chk-item{ display:flex; align-items:center; justify-content:space-between; padding:3px 2px; border-radius:4px; }
+.chk-item:hover{ background:#f9f9fa; }
+.chk-item label{ display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; flex:1; }
+.chk-item input[type=checkbox]{ width:15px; height:15px; accent-color:var(--text); flex:none; }
+.chk-item span[data-editable]{ cursor:text; padding:1px 3px; border-radius:3px; }
+.chk-item span[data-editable]:hover{ background:#eee; }
+
+.inline-add-form{ display:flex; gap:6px; margin-top:8px; }
+.inline-add-input{ flex:1; padding:6px 9px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); }
+
+.comments-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:10px; max-height:220px; overflow-y:auto; }
+.comment{ background:#f7f7f8; border-radius:var(--radius-sm); padding:8px 10px; }
+.comment-head{ display:flex; justify-content:space-between; margin-bottom:3px; font-size:12.5px; }
+.comment div:last-child{ font-size:13px; }
+.comment-form{ display:flex; flex-direction:column; gap:6px; }
+.comment-author-input{ padding:6px 9px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); max-width:220px; }
+.comment-text-input{ padding:7px 9px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); resize:vertical; }
+
+.modal-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); }
+
+/* Export menu */
+.export-wrap{ position:relative; }
+.export-menu{
+  display:none; position:absolute; right:0; top:calc(100% + 6px);
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius-md);
+  box-shadow:var(--shadow-md); min-width:170px; padding:6px; z-index:200;
+}
+.export-menu.open{ display:block; }
+.export-menu button{ display:block; width:100%; text-align:left; border:none; background:none; padding:7px 9px; border-radius:6px; font-size:13px; }
+.export-menu button:hover{ background:#f4f4f5; }
+.export-menu hr{ border:none; border-top:1px solid var(--border); margin:4px 0; }
+
+/* New card modal */
+.new-card-modal .modal-fields{ grid-template-columns:repeat(2,1fr); }
+
+/* ============================================================
+   MEETING MODE
+   ============================================================ */
+body.meeting-mode .secondary-ui{ display:none !important; }
+body.meeting-mode #main-content{ padding:32px 40px 60px; }
+body.meeting-mode .card-tile{ padding:22px 24px; }
+body.meeting-mode .card-tile h3{ font-size:18px; }
+body.meeting-mode .tile-desc{ font-size:14px; -webkit-line-clamp:3; }
+body.meeting-mode .badge{ font-size:13px; padding:5px 12px; }
+body.meeting-mode .view-header h1{ font-size:28px; }
+body.meeting-mode .chk-item input[type=checkbox]{ width:22px; height:22px; }
+body.meeting-mode .chk-item label{ font-size:16px; }
+body.meeting-mode .chk-group-head h4{ font-size:15px; }
+body.meeting-mode .modal{ width:760px; }
+body.meeting-mode .modal-header h2{ font-size:24px; }
+body.meeting-mode .sidebar{ width:76px; }
+body.meeting-mode .sidebar .nav-label,
+body.meeting-mode .sidebar .brand-text{ display:none; }
+body.meeting-mode .stat-value{ font-size:30px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1024px){
+  .sidebar{ width:72px; }
+  .sidebar .nav-label,.sidebar .brand-text{ display:none; }
+  .panel-grid{ grid-template-columns:1fr; }
+  .modal-fields{ grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:720px){
+  .mobile-only{ display:flex; }
+  .sidebar{
+    position:fixed; top:0; left:0; height:100vh; width:230px; z-index:600;
+    transform:translateX(-100%); transition:transform .18s ease;
+  }
+  .sidebar .nav-label,.sidebar .brand-text{ display:block; }
+  .app.sidebar-open .sidebar{ transform:translateX(0); }
+  .topbar{ flex-wrap:wrap; }
+  .search-wrap{ order:3; max-width:none; width:100%; }
+  .stat-grid{ grid-template-columns:repeat(2,1fr); }
+  .modal-fields{ grid-template-columns:1fr 1fr; }
+  .new-card-modal .modal-fields{ grid-template-columns:1fr; }
+  .readiness-row{ grid-template-columns:110px 1fr 60px; gap:8px; }
+}
+</style>
 </head>
 <body>
-  <div class="page">
-    <h1>E1 · Frontend UX / UI</h1>
-    <p class="lede">
-      Clickable screen specs for FE development (Biometric dark + yellow).
-      Registration legal path → Cabinet BALANCE → Flow <code>insufficient_balance</code>.
-    </p>
+<div id="app-root"></div>
 
-    <div class="banner">
-      <strong>FE contract:</strong>
-      mandatory company fields + country policy + ToS/DPA → password;
-      cabinet balance / top-up / ledger / mode;
-      flow blocked with top-up CTA.
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+"use strict";
+if(typeof mermaid !== 'undefined'){
+  mermaid.initialize({startOnLoad:false, theme:'default', securityLevel:'loose', flowchart:{htmlLabels:true, curve:'basis'}});
+}
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const DEPARTMENTS = [
+  {id:'Legal',       label:'Legal',       color:'#7c3aed'},
+  {id:'Finance',     label:'Finance',     color:'#2563eb'},
+  {id:'Accounting',  label:'Accounting',  color:'#0d9488'},
+  {id:'Operations',  label:'Operations',  color:'#ea580c'},
+  {id:'Development', label:'Development', color:'#475569'},
+  {id:'CEO',         label:'CEO',         color:'#e11d48'},
+];
+const STATUSES = ['Discussion','Approved','Blocked','After MVP'];
+const PRIORITIES = ['High','Medium','Low'];
 
-    <div class="group-label">Registration</div>
-    <div class="tabs" id="tabs-reg"></div>
-    <div class="group-label">Cabinet</div>
-    <div class="tabs" id="tabs-cab"></div>
-    <div class="group-label">Flow</div>
-    <div class="tabs" id="tabs-flow"></div>
+const STATUS_COLORS = {
+  'Discussion': {bg:'#fef3c7', fg:'#92400e', dot:'#f59e0b'},
+  'Approved':   {bg:'#dcfce7', fg:'#166534', dot:'#16a34a'},
+  'Blocked':    {bg:'#fee2e2', fg:'#991b1b', dot:'#dc2626'},
+  'After MVP':  {bg:'#ede9fe', fg:'#5b21b6', dot:'#7c3aed'},
+};
+const PRIORITY_COLORS = {
+  High:   {bg:'#fee2e2', fg:'#991b1b'},
+  Medium: {bg:'#fef9c3', fg:'#854d0e'},
+  Low:    {bg:'#e5e7eb', fg:'#374151'},
+};
 
-    <div class="layout">
-      <div id="preview"></div>
+const NAV_ITEMS = [
+  {id:'overview',    label:'Overview',          icon:'⌂'},
+  {id:'legal',       label:'Legal',             icon:'⚖'},
+  {id:'finance',     label:'Finance',           icon:'$'},
+  {id:'accounting',  label:'Accounting',        icon:'#'},
+  {id:'operations',  label:'Operations',        icon:'⚙'},
+  {id:'development', label:'Development',       icon:'&lt;/&gt;'},
+  {id:'ceo',         label:'CEO Dashboard',     icon:'★'},
+  {id:'decisions',   label:'Decisions',         icon:'▤'},
+  {id:'graph',       label:'Dependency Graph',  icon:'◈'},
+  {id:'scheme',      label:'Interaction Scheme', icon:'⇄'},
+];
 
-      <aside class="side">
-        <h3 id="side-title">—</h3>
-        <div class="id" id="side-id">—</div>
-        <hr />
-        <div style="font-weight:600;margin-bottom:8px;">UX notes</div>
-        <ul class="notes" id="side-notes"></ul>
-        <hr />
-        <div style="font-weight:600;margin-bottom:8px;">Nav</div>
-        <div class="nav-btns">
-          <button type="button" class="prev" id="btn-prev">Prev</button>
-          <button type="button" class="next" id="btn-next">Next screen</button>
-        </div>
-      </aside>
-    </div>
-  </div>
+/* Editable custom Mermaid diagrams — one per user scenario, seeded from
+   the legal/business model description given when this feature was set up.
+   Editable in the UI textarea (per tab), or from the browser console via
+   app.setCustomMermaidSource(src, tab) / app.getCustomMermaidSource(tab). */
+const CUSTOM_DIAGRAM_TABS = [
+  {id:'kz',            label:'Казахстан (резидент)'},
+  {id:'intl',          label:'США / международный (карта)'},
+  {id:'euBlock',       label:'ЕС / UK / CH (блок)'},
+  {id:'cnZa',          label:'Китай / ЮАР (трансгран. огр.)'},
+  {id:'localPresence', label:'TR / KR / SA / BR / IN (лок. присутствие)'},
+  {id:'docTriggers',   label:'Документы по этапам (триггеры)'},
+];
 
-  <template id="tpl-reg-email">
-    <div class="frame">
-      <div class="frame-top">
-        <span>Biometric · Sign up</span>
-        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
-      </div>
-      <div class="progress" data-filled="1" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Sign up to <span class="brand-yellow">Biometric</span></h2>
-        <p class="sub">Enter your corporate email to start registration.</p>
-        <div class="field">
-          <label>Work email (required)</label>
-          <div class="box focus">ops@acme.com</div>
-        </div>
-        <div class="btn primary full">Continue</div>
-        <p class="foot-note">Already have an account? <a href="#">Sign in</a></p>
-      </div>
-    </div>
-  </template>
+const DEFAULT_CUSTOM_MERMAID_KZ =
+`%% Сценарий: Казахстан — резидентная модель (тенге, АВР+ЭСФ)
+flowchart TB
+    subgraph CLIENT["Клиент (плательщик, ТОО / ИП)"]
+    direction TB
+        A["Регистрация: страна = Казахстан"] --> S{"Санкционный скрининг<br>(OFAC / UN / US State Dept)"}
+        S -- "Совпадение" --> SX["Отказ в регистрации"]
+        S -- "Чисто" --> T{"Тип клиента"}
+        T -- "Юрлицо (ТОО)" --> X["Акцепт ToS + DPA<br>(clickwrap: timestamp, IP, версия документа)"]
+        T -- "Физлицо (ИП)" --> V["Заверение:<br>«использую для бизнес-целей»"]
+        V --> W["Чувствительные функции (1:N,<br>массовые проверки) отключены"]
+        W --> W2["Включаются только после<br>доп. проверки комплаенсом"]
+        W2 --> X
+        X --> Y["Аккаунт создан"]
+        Y --> Z["Пополнение баланса<br>= аванс по ГК РК"]
+        Z --> PM{"Способ оплаты"}
+        PM -- "Счёт" --> PM1["Перевод с расчётного счёта (₸)"]
+        PM -- "Эквайринг" --> PM2["Kaspi Pay / Halyk / ioka /<br>Freedom Pay / CloudPayments KZ (₸)"]
+        PM1 --> CR["Кредиты зачислены"]
+        PM2 --> CR
+        CR --> INIT["Инициирует проверку End-User"]
+        DED["Списание кредитов по тарифу<br>на момент транзакции"] --> BAL{"Баланс достаточен?"}
+        BAL -- "Нет" --> LOW["Уведомление о низком балансе"] --> Z
+        BAL -- "Да" --> M1["Ежемесячно: АВР на сумму списаний"]
+        M1 --> M2["Ежемесячно: ЭСФ"]
+        M2 --> ARCH["Хранение записей 7 лет"]
+    end
 
-  <template id="tpl-reg-otp">
-    <div class="frame">
-      <div class="frame-top">
-        <span>Biometric · Sign up</span>
-        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
-      </div>
-      <div class="progress" data-filled="2" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Confirm email</h2>
-        <p class="sub">Enter the code we sent to your email.</p>
-        <p class="sub" style="margin-top:-8px;">A verification code was sent to <strong>ops@acme.com</strong>.</p>
-        <label style="font-size:0.82rem;color:var(--muted);">Verification code</label>
-        <div class="otp" style="margin-top:6px;">
-          <i>8</i><i>6</i><i>4</i><i class="focus">9</i>
-        </div>
-        <div class="actions">
-          <div class="btn ghost">&lt; Back</div>
-          <div class="btn primary">Confirm</div>
-        </div>
-        <p class="foot-note">Resend in 37s</p>
-      </div>
-    </div>
-  </template>
+    subgraph ENDUSER["Проверяемое физлицо (End-User)"]
+    direction TB
+        EC["Получает запрос на проверку"] --> EU1["Акцепт End-User Verification Terms<br>+ Verification Privacy Notice"]
+        EU1 --> EU2["Предоставление документов / биометрии"]
+        EU2 --> RES["Результат проверки готов<br>(не сырые данные — клиенту)"]
+    end
 
-  <template id="tpl-reg-company">
-    <div class="frame">
-      <div class="frame-top">
-        <span>Biometric · Sign up</span>
-        <div class="links"><span>English</span><span class="link-accent">Sign in</span></div>
-      </div>
-      <div class="progress" data-filled="3" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Company data</h2>
-        <p class="sub">Fill in your organization details.</p>
-        <div class="field">
-          <label>Company name (required)</label>
-          <div class="box focus">Acme KYC LLP</div>
-        </div>
-        <div class="field">
-          <label>Industry (required)</label>
-          <div class="box ph">Select industry</div>
-        </div>
-        <div class="field">
-          <label>Client type (required)</label>
-          <div class="box">Legal entity (ТОО / Company)</div>
-          <div class="hint">Global enum · individuals not allowed</div>
-        </div>
-        <div class="field">
-          <label>BIN / Tax ID (required)</label>
-          <div class="box ph">BIN</div>
-        </div>
-        <div class="field">
-          <label>Country (required)</label>
-          <div class="box ph">Select country</div>
-          <div class="hint">Manual select · IP does not prefill country</div>
-        </div>
-        <div class="field">
-          <label>Phone</label>
-          <div class="box ph">Optional</div>
-        </div>
-        <div class="check">
-          <div class="box"></div>
-          <div>I agree to the <a href="#">Terms and Privacy Policy (DPA)</a></div>
-        </div>
-        <div class="actions">
-          <div class="btn ghost">&lt; Back</div>
-          <div class="btn primary">Continue</div>
-        </div>
-      </div>
-    </div>
-  </template>
+    INIT --> EC
+    RES --> DED
 
-  <template id="tpl-reg-deny">
-    <div class="frame">
-      <div class="frame-top"><span>Biometric · Sign up</span></div>
-      <div class="progress" data-filled="3" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Service not available</h2>
-        <p class="sub">Registration cannot continue for this country.</p>
-        <div class="alert danger">
-          <div class="title">Country: Germany (DE)</div>
-          <div class="body">The service is not offered to organizations from the EU / UK / Switzerland.</div>
-        </div>
-        <div class="field">
-          <label>Country</label>
-          <div class="box">Germany</div>
-        </div>
-        <div class="btn primary full">Change country</div>
-        <p class="foot-note">Terminal · no account · reason=country_deny_eu_uk_ch</p>
-      </div>
-    </div>
-  </template>
+    class SX,S gate
+    class A,T,X,Y,Z,PM,PM1,PM2,CR,INIT,DED,BAL,LOW,M1,M2,ARCH client
+    class V,W,W2 review
+    class EC,EU1,EU2,RES enduser
+    classDef gate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef client fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef review fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef enduser fill:#fff7ed,stroke:#fb923c,color:#7c2d12`;
 
-  <template id="tpl-reg-hold">
-    <div class="frame">
-      <div class="frame-top"><span>Biometric · Sign up</span></div>
-      <div class="progress" data-filled="3" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Registration on hold</h2>
-        <p class="sub">Onboarding is temporarily unavailable for this country.</p>
-        <div class="alert warn">
-          <div class="title">Country: Brazil (BR)</div>
-          <div class="body">Local presence / regulatory review required. Same hold UX for CN, ZA, TR, KR, SA, BR, IN.</div>
-        </div>
-        <div class="btn ghost full">&lt; Back to country</div>
-        <p class="foot-note">Country stays in dropdown · waitlist optional P2</p>
-      </div>
-    </div>
-  </template>
+const DEFAULT_CUSTOM_MERMAID_INTL =
+`%% Сценарий: США / международный клиент — оплата картой (Stripe)
+flowchart TB
+    subgraph CLIENT["Клиент — плательщик (не KZ, не EU/UK/CH)"]
+    direction TB
+        A["Регистрация: страна ≠ KZ, ≠ EU/UK/CH"] --> S{"Санкционный скрининг<br>(OFAC / UN / US State Dept)"}
+        S -- "Совпадение" --> SX["Отказ в регистрации"]
+        S -- "Чисто" --> NOTE["⚠ TR / KR / SA / BR / IN — оценить<br>локальные требования до подключения;<br>CN / ZA — ограничения трансграничной передачи"]
+        NOTE --> T{"Тип клиента"}
+        T -- "Юрлицо / банк / госсектор" --> CT{"Тип контракта"}
+        CT -- "Стандарт" --> X["Акцепт ToS + DPA<br>(clickwrap: timestamp, IP, версия)"]
+        CT -- "Enterprise" --> MSA["Enterprise MSA + Order Form<br>(ссылается на те же ToS/DPA)"]
+        T -- "Физлицо (соло-разработчик)" --> V["Заверение:<br>«использую для бизнес-целей»"]
+        V --> W["Чувствительные функции отключены<br>до доп. проверки комплаенсом"]
+        W --> X
+        X --> Y["Аккаунт создан"]
+        MSA --> Y
+        Y --> Z["Пополнение баланса (Stripe, карта)"]
+        Z --> INV["Invoice: реквизиты, tax ID,<br>«Prepaid service credits under ToS»"]
+        INV --> RCP["Receipt (авто, Stripe)"]
+        RCP --> CR["Кредиты зачислены"]
+        CR --> INIT["Инициирует проверку End-User"]
+        DED["Списание кредитов по тарифу<br>на момент транзакции"] --> BAL{"Баланс достаточен?"}
+        BAL -- "Нет" --> LOW["Уведомление о низком балансе"] --> Z
+        BAL -- "Да" --> MUS["Ежемесячно: Monthly Usage Statement"]
+        MUS --> NEED{"Нужны закрывающие?<br>(MENA / Азия / LatAm)"}
+        NEED -- "Нет" --> TAXQ{"Запрошен сертификат?"}
+        NEED -- "Да" --> ACT["Monthly Service Report / Act<br>(с полем подписи)"]
+        ACT --> TAXQ
+        TAXQ -- "Не запрошен" --> ARCH["Хранение записей 7 лет"]
+        TAXQ -- "US-клиент" --> W9["W-9"]
+        TAXQ -- "Договорная страна" --> F6166["IRS Form 6166<br>(снижает withholding)"]
+        W9 --> ARCH
+        F6166 --> ARCH
+    end
 
-  <template id="tpl-reg-password">
-    <div class="frame">
-      <div class="frame-top"><span>Biometric · Sign up</span></div>
-      <div class="progress" data-filled="5" data-total="5"></div>
-      <div class="frame-body">
-        <h2>Set password</h2>
-        <p class="sub">Create a secure password for your account.</p>
-        <p class="sub" style="margin-top:-10px;font-size:0.82rem;">Only after country allow · sanctions clear · ToS+DPA accepted.</p>
-        <div class="field">
-          <label>Password</label>
-          <div class="box focus ph">Enter password</div>
-        </div>
-        <div class="field">
-          <label>Confirm password</label>
-          <div class="box ph">Repeat password</div>
-        </div>
-        <div class="actions">
-          <div class="btn ghost">&lt; Back</div>
-          <div class="btn primary">Complete registration</div>
-        </div>
-      </div>
-    </div>
-  </template>
+    subgraph ENDUSER["Проверяемое физлицо (End-User)"]
+    direction TB
+        EC["Получает запрос на проверку"] --> EU1["Акцепт End-User Verification Terms<br>+ Verification Privacy Notice"]
+        EU1 --> EU2["Предоставление документов / биометрии"]
+        EU2 --> RES["Результат проверки готов<br>(не сырые данные — клиенту)"]
+    end
 
-  <template id="tpl-lk-balance">
-    <div class="frame">
-      <div class="frame-top">
-        <span>Cabinet · Balance</span>
-        <span class="link-accent">BALANCE</span>
-      </div>
-      <div class="frame-body">
-        <h2>Balance</h2>
-        <p class="sub">Prepaid credits · billing mode BALANCE</p>
-        <div class="alert warn">
-          <div class="title">Low balance</div>
-          <div class="body">Balance is below $5.00. Top up to keep running flows.</div>
-        </div>
-        <div style="font-size:0.82rem;color:var(--muted);">Available</div>
-        <div class="balance-amt">$4.20</div>
-        <div style="font-size:0.78rem;color:var(--faint);margin-bottom:14px;">USD · is_low=true · threshold=5.00</div>
-        <div class="actions">
-          <div class="btn primary">Top up</div>
-          <div class="btn ghost">Transactions</div>
-        </div>
-        <div style="margin-top:10px;" class="btn ghost full">Billing mode: BALANCE</div>
-      </div>
-    </div>
-  </template>
+    INIT --> EC
+    RES --> DED
 
-  <template id="tpl-lk-topup">
-    <div class="frame">
-      <div class="frame-top"><span>Cabinet · Top-up</span></div>
-      <div class="frame-body">
-        <h2>Top up balance</h2>
-        <p class="sub">Pay by card via Stripe Checkout · min $10</p>
-        <div class="field">
-          <label>Amount (USD)</label>
-          <div class="box focus">50.00</div>
-          <div class="hint">Min 10 · Max 1,000,000</div>
-        </div>
-        <div class="btn primary full">Continue to Stripe</div>
-        <p class="foot-note">After return: refetch GET /balance/ — webhook may lag; show pending state.</p>
-      </div>
-    </div>
-  </template>
+    class SX,S gate
+    class A,NOTE,T,CT,X,MSA,Y,Z,INV,RCP,CR,INIT,DED,BAL,LOW,MUS,NEED,ACT,TAXQ,W9,F6166,ARCH client
+    class V,W review
+    class EC,EU1,EU2,RES enduser
+    classDef gate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef client fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef review fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef enduser fill:#fff7ed,stroke:#fb923c,color:#7c2d12`;
 
-  <template id="tpl-lk-ledger">
-    <div class="frame">
-      <div class="frame-top"><span>Cabinet · Transactions</span></div>
-      <div class="frame-body">
-        <h2>Transactions</h2>
-        <p class="sub">Balance ledger</p>
-        <div class="ledger-row">
-          <div><div>TOPUP</div><div class="meta">Stripe · today</div></div>
-          <div><div class="amt" style="color:var(--ok)">+50.00</div><div class="after">bal 54.20</div></div>
-        </div>
-        <div class="ledger-row">
-          <div><div>CHARGE</div><div class="meta">Documents · flow…</div></div>
-          <div><div class="amt">−0.25</div><div class="after">bal 4.20</div></div>
-        </div>
-        <div class="ledger-row">
-          <div><div>ADJUSTMENT</div><div class="meta">Admin · invoice #42</div></div>
-          <div><div class="amt" style="color:var(--ok)">+1.00</div><div class="after">bal 4.45</div></div>
-        </div>
-      </div>
-    </div>
-  </template>
+const DEFAULT_CUSTOM_MERMAID_EU =
+`%% Сценарий: ЕС / UK / Швейцария — заблокировано на старте (3-стадийный план)
+flowchart TB
+    A["Регистрация: страна = EU / UK / Швейцария?"] --> B{"Страна ЕС / UK / CH?"}
+    B -- "Нет" --> OK["Обычный онбординг продолжается"]
+    B -- "Да" --> R1["Отказ при регистрации<br>(«сервис не предлагается лицам<br>из ЕС / UK / CH»)"]
+    R1 --> R2{"Не отклонён на регистрации,<br>но карта из ЕС / UK?"}
+    R2 -- "Да" --> R3["Блок на уровне Stripe<br>(эмитент карты ЕС / UK)"]
+    R2 -- "Нет" --> R4["Нет таргетинга на регион:<br>без евро-цен, языков ЕС,<br>региональной рекламы"]
 
-  <template id="tpl-lk-mode">
-    <div class="frame">
-      <div class="frame-top"><span>Cabinet · Billing mode</span></div>
-      <div class="frame-body">
-        <h2>Billing mode</h2>
-        <p class="sub">SUBSCRIPTION unchanged · BALANCE is prepaid USD</p>
-        <div class="mode-card">
-          <div class="name">SUBSCRIPTION</div>
-          <div class="desc">Technology quotas · existing renewals</div>
-        </div>
-        <div class="mode-card selected">
-          <div class="name">BALANCE</div>
-          <div class="desc">Pay per technology run from USD balance</div>
-        </div>
-        <div class="alert warn">
-          <div class="title">Warning</div>
-          <div class="body">Subscription for Documents keeps expiring on 2026-12-01 while on balance billing.</div>
-        </div>
-        <div class="btn primary full">Switch to BALANCE</div>
-        <p class="foot-note">400 if active flow sessions · or no quota to switch back</p>
-      </div>
-    </div>
-  </template>
+    R1 -.-> S2["Стадия 2 (план):<br>представители в ЕС + UK,<br>SCC / UK IDTA активны в DPA.<br>Юрлицо в ЕС не требуется.<br>~€2–4k/год"]
+    S2 -.-> S3["Стадия 3 (план, триггер — крупные<br>регулируемые EU-клиенты):<br>своё юрлицо в ЕС (модель Didit).<br>Снимает вопрос передачи данных,<br>29 регуляторов → 1,<br>доступ к банковским/гос закупкам.<br>Высокий бюджет"]
 
-  <template id="tpl-flow-insuff">
-    <div class="frame">
-      <div class="frame-top"><span>Flow · Start session</span></div>
-      <div class="frame-body">
-        <h2>Start flow</h2>
-        <p class="sub">BALANCE org · session create blocked</p>
-        <div class="alert danger">
-          <div class="title">Insufficient funds</div>
-          <div class="body">Not enough balance to start this flow. Top up your balance to continue.</div>
-          <div class="body" style="margin-top:8px;font-size:0.78rem;">
-            API: 400 · code <strong>insufficient_balance</strong><br />
-            detail: Insufficient balance to start the flow
-          </div>
-        </div>
-        <div class="btn primary full">Top up balance</div>
-        <div style="margin-top:8px;" class="btn ghost full">Cancel</div>
-      </div>
-    </div>
-  </template>
+    class B,R1,R2,R3 gate
+    class A,OK,R4 client
+    class S2,S3 future
+    classDef gate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef client fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef future fill:#f3f4f6,stroke:#9ca3af,color:#374151,stroke-dasharray: 4 3`;
 
-  <script>
-    const SCREENS = [
-      { id: "reg-email", group: "Registration", label: "Work email", step: "1/5",
-        notes: ["Language from IP, default English", "Corporate email first gate"] },
-      { id: "reg-otp", group: "Registration", label: "Confirm email", step: "2/5",
-        notes: ["4-digit code AS-IS", "Resend cooldown preserved"] },
-      { id: "reg-company", group: "Registration", label: "Company data", step: "3/5",
-        notes: ["All fields required except phone", "Client type global enum + localized labels", "ToS+DPA before password"] },
-      { id: "reg-deny", group: "Registration", label: "Country deny", step: "3/5",
-        notes: ["EU/UK/CH hard deny copy", "No account · change country CTA"] },
-      { id: "reg-hold", group: "Registration", label: "Country hold", step: "3/5",
-        notes: ["Hold countries visible in dropdown", "Unified hold message"] },
-      { id: "reg-password", group: "Registration", label: "Set password", step: "5/5",
-        notes: ["Only after legal gates", "Complete → LK"] },
-      { id: "lk-balance", group: "Cabinet", label: "Balance", step: "LK",
-        notes: ["GET /balance/", "is_low banner under $5", "CTA Top up"] },
-      { id: "lk-topup", group: "Cabinet", label: "Top-up", step: "LK",
-        notes: ["POST /topup/ → Stripe Checkout", "Min $10"] },
-      { id: "lk-ledger", group: "Cabinet", label: "Transactions", step: "LK",
-        notes: ["TOPUP / CHARGE / ADJUSTMENT / REFUND", "Signed amounts"] },
-      { id: "lk-mode", group: "Cabinet", label: "Billing mode", step: "LK",
-        notes: ["Show warnings[] from API", "Handle switch 400s"] },
-      { id: "flow-insuff", group: "Flow", label: "Insufficient balance", step: "Flow",
-        notes: ["No session created", "CTA → top-up screen"] },
+const DEFAULT_CUSTOM_MERMAID_CN_ZA =
+`%% Сценарий: Китай / ЮАР — ограничения на трансграничную передачу данных (полный цикл)
+flowchart TB
+    subgraph CLIENT["Клиент — плательщик (Китай / ЮАР)"]
+    direction TB
+        A["Регистрация: страна = Китай / ЮАР"] --> S{"Санкционный скрининг<br>(OFAC / UN / US State Dept)"}
+        S -- "Совпадение" --> SX["Отказ в регистрации"]
+        S -- "Чисто" --> RESTR["⚠ Локальные ограничения на<br>трансграничную передачу /<br>локализацию данных"]
+        RESTR --> MODEL{"Доступна модель субподряда результата?<br>(гипотеза по аналогии с гос. базами KZ —<br>требует юридического подтверждения)"}
+        MODEL -- "Нет" --> HOLD["Онбординг на паузе —<br>инфраструктуры обработки в стране нет"]
+        MODEL -- "Да" --> SUB["Локальный субпроцессор:<br>проверка выполняется в стране,<br>наружу передаётся только результат<br>(не сырые данные)"]
+        SUB --> DOC["Отражается как субпроцессор:<br>в списке субпроцессоров + в согласии субъекта"]
+        DOC --> RISK["⚠ Остаточный риск: регуляторный + репутационный<br>(пример: штраф Yango €100M<br>за передачу данных в РФ)"]
+        RISK --> T{"Тип клиента"}
+        T -- "Юрлицо / банк / госсектор" --> CT{"Тип контракта"}
+        CT -- "Стандарт" --> X["Акцепт ToS + DPA<br>(clickwrap: timestamp, IP, версия)"]
+        CT -- "Enterprise" --> MSA["Enterprise MSA + Order Form"]
+        T -- "Физлицо (соло-разработчик)" --> V["Заверение:<br>«использую для бизнес-целей»"]
+        V --> W["Чувствительные функции отключены<br>до доп. проверки комплаенсом"]
+        W --> X
+        X --> Y["Аккаунт создан"]
+        MSA --> Y
+        Y --> Z["Пополнение баланса (Stripe, карта)"]
+        Z --> INV["Invoice: реквизиты, tax ID,<br>«Prepaid service credits under ToS»"]
+        INV --> RCP["Receipt (авто, Stripe)"]
+        RCP --> CR["Кредиты зачислены"]
+        CR --> INIT["Инициирует проверку End-User<br>(через локального субпроцессора)"]
+        DED["Списание кредитов по тарифу<br>на момент транзакции"] --> BAL{"Баланс достаточен?"}
+        BAL -- "Нет" --> LOW["Уведомление о низком балансе"] --> Z
+        BAL -- "Да" --> MUS["Ежемесячно: Monthly Usage Statement"]
+        MUS --> ARCH["Хранение записей 7 лет"]
+    end
+
+    subgraph ENDUSER["Проверяемое физлицо (End-User, в стране)"]
+    direction TB
+        EC["Получает запрос на проверку"] --> EU1["Акцепт End-User Verification Terms<br>+ Verification Privacy Notice"]
+        EU1 --> EU2["Предоставление документов / биометрии<br>(обработка локально, у субпроцессора)"]
+        EU2 --> RES["Результат проверки готов<br>(не сырые данные — клиенту)"]
+    end
+
+    INIT --> EC
+    RES --> DED
+
+    class S,SX,HOLD gate
+    class A,RESTR,MODEL,T,CT,X,MSA,Y,Z,INV,RCP,CR,INIT,DED,BAL,LOW,MUS,ARCH client
+    class V,W,RISK review
+    class SUB,DOC sub
+    class EC,EU1,EU2,RES enduser
+    classDef gate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef client fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef review fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef sub fill:#ecfeff,stroke:#06b6d4,color:#164e63
+    classDef enduser fill:#fff7ed,stroke:#fb923c,color:#7c2d12`;
+
+const DEFAULT_CUSTOM_MERMAID_LOCAL_PRESENCE =
+`%% Сценарий: Турция / Южная Корея / Саудовская Аравия / Бразилия / Индия —
+%% требуется локальное присутствие / регистрация / разрешение (характер свой в каждой стране; полный цикл)
+flowchart TB
+    subgraph CLIENT["Клиент — плательщик (TR / KR / SA / BR / IN)"]
+    direction TB
+        A["Регистрация: страна ∈ {TR, KR, SA, BR, IN}"] --> S{"Санкционный скрининг<br>(OFAC / UN / US State Dept)"}
+        S -- "Совпадение" --> SX["Отказ в регистрации"]
+        S -- "Чисто" --> GATE["⚠ Требуется локальное присутствие /<br>регистрация / разрешение —<br>характер требования свой в каждой стране"]
+        GATE --> EVAL["Оценка по стране:<br>вероятность внимания регулятора<br>+ требования клиентов при due diligence поставщика"]
+        EVAL --> DEC{"Юридическая проверка<br>по стране завершена?"}
+        DEC -- "Нет" --> HOLD["Онбординг на паузе<br>до завершения проверки по стране"]
+        DEC -- "Да, требование выполнено" --> T{"Тип клиента"}
+        T -- "Юрлицо / банк / госсектор" --> CT{"Тип контракта"}
+        CT -- "Стандарт" --> X["Акцепт ToS + DPA<br>(clickwrap: timestamp, IP, версия)"]
+        CT -- "Enterprise" --> MSA["Enterprise MSA + Order Form"]
+        T -- "Физлицо (соло-разработчик)" --> V["Заверение:<br>«использую для бизнес-целей»"]
+        V --> W["Чувствительные функции отключены<br>до доп. проверки комплаенсом"]
+        W --> X
+        X --> Y["Аккаунт создан"]
+        MSA --> Y
+        Y --> Z["Пополнение баланса (Stripe, карта)"]
+        Z --> INV["Invoice: реквизиты, tax ID,<br>«Prepaid service credits under ToS»"]
+        INV --> RCP["Receipt (авто, Stripe)"]
+        RCP --> CR["Кредиты зачислены"]
+        CR --> INIT["Инициирует проверку End-User"]
+        DED["Списание кредитов по тарифу<br>на момент транзакции"] --> BAL{"Баланс достаточен?"}
+        BAL -- "Нет" --> LOW["Уведомление о низком балансе"] --> Z
+        BAL -- "Да" --> MUS["Ежемесячно: Monthly Usage Statement"]
+        MUS --> NEED{"Нужны закрывающие?<br>(MENA / Азия / LatAm)"}
+        NEED -- "Нет" --> TAXQ{"Запрошен сертификат?"}
+        NEED -- "Да" --> ACT["Monthly Service Report / Act<br>(с полем подписи)"]
+        ACT --> TAXQ
+        TAXQ -- "Не запрошен" --> ARCH["Хранение записей 7 лет"]
+        TAXQ -- "US-клиент" --> W9["W-9"]
+        TAXQ -- "Договорная страна" --> F6166["IRS Form 6166<br>(снижает withholding)"]
+        W9 --> ARCH
+        F6166 --> ARCH
+    end
+
+    subgraph ENDUSER["Проверяемое физлицо (End-User)"]
+    direction TB
+        EC["Получает запрос на проверку"] --> EU1["Акцепт End-User Verification Terms<br>+ Verification Privacy Notice"]
+        EU1 --> EU2["Предоставление документов / биометрии"]
+        EU2 --> RES["Результат проверки готов<br>(не сырые данные — клиенту)"]
+    end
+
+    INIT --> EC
+    RES --> DED
+
+    class S,SX,HOLD gate
+    class A,GATE,EVAL,DEC,T,CT,X,MSA,Y,Z,INV,RCP,CR,INIT,DED,BAL,LOW,MUS,NEED,ACT,TAXQ,W9,F6166,ARCH client
+    class V,W review
+    class EC,EU1,EU2,RES enduser
+    classDef gate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef client fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef review fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef enduser fill:#fff7ed,stroke:#fb923c,color:#7c2d12`;
+
+const DEFAULT_CUSTOM_MERMAID_DOC_TRIGGERS =
+`%% Сценарий: документы, триггеруемые по мере подключения функций/продуктов
+%% (по образцу прогрессивного раскрытия у Stripe: Payments -> Stripe Services Agreement,
+%% Treasury -> Treasury Addendum, Identity -> Identity Addendum)
+flowchart TB
+    S1["Регистрация организации"] -.-> D1["Terms of Service<br>+ Privacy Policy"]
+    S1 --> S2["Первый вход администратора"]
+    S2 -.-> D2["Cookie Notice<br>(если применимо)"]
+    S2 --> S3["Генерация API Key"]
+    S3 -.-> D3["Acceptable Use Policy"]
+    S3 --> S4["Включение Production"]
+    S4 -.-> D4["DPA"]
+    S4 --> S5["Подключение Face Recognition /<br>Liveness / eDocument"]
+    S5 -.-> D5["Biometric Addendum"]
+    S5 --> S6["Выбор обработки данных в ЕС"]
+    S6 -.-> D6["SCC / UK Addendum /<br>Swiss Addendum (если применимо)"]
+    S6 --> S7["Изменение тарифа"]
+    S7 -.-> D7["Pricing / Billing Terms"]
+    S7 --> S8["Подключение Enterprise"]
+    S8 -.-> D8["MSA + Order Form + SLA"]
+    S8 --> S9["Подключение нового<br>платного продукта"]
+    S9 -.-> D9["Order Form<br>или Product Addendum"]
+
+    class S1,S2,S3,S4,S5,S6,S7,S8,S9 stage
+    class D1,D2,D3,D4,D5,D6,D7,D8,D9 doc
+    classDef stage fill:#eef2ff,stroke:#818cf8,color:#312e81
+    classDef doc fill:#ecfdf5,stroke:#10b981,color:#065f46`;
+
+const CUSTOM_DIAGRAM_DEFAULTS = {
+  kz: DEFAULT_CUSTOM_MERMAID_KZ,
+  intl: DEFAULT_CUSTOM_MERMAID_INTL,
+  euBlock: DEFAULT_CUSTOM_MERMAID_EU,
+  cnZa: DEFAULT_CUSTOM_MERMAID_CN_ZA,
+  docTriggers: DEFAULT_CUSTOM_MERMAID_DOC_TRIGGERS,
+  localPresence: DEFAULT_CUSTOM_MERMAID_LOCAL_PRESENCE
+};
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function uid(prefix){
+  return (prefix||'id') + '-' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+}
+function esc(str){
+  if(str === undefined || str === null) return '';
+  return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function deptColor(id){ const d = DEPARTMENTS.find(x=>x.id===id); return d ? d.color : '#666'; }
+function formatDate(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ============================================================
+   DATA STORE
+   ============================================================ */
+class DataStore{
+  constructor(){
+    this.key = 'decisionHub_v1';
+    this.listeners = [];
+    this.cards = [];
+    this.load();
+  }
+  load(){
+    const raw = localStorage.getItem(this.key);
+    if(raw){
+      try{
+        const parsed = JSON.parse(raw);
+        this.cards = parsed.cards || [];
+        if(!Array.isArray(this.cards) || !this.cards.length) throw new Error('empty');
+      }catch(e){
+        this.cards = SeedData.build();
+        this.save();
+      }
+    } else {
+      this.cards = SeedData.build();
+      this.save();
+    }
+  }
+  save(){
+    localStorage.setItem(this.key, JSON.stringify({cards:this.cards, savedAt:Date.now()}));
+    this.notify();
+  }
+  subscribe(fn){ this.listeners.push(fn); }
+  notify(){ this.listeners.forEach(fn=>fn()); }
+  getCard(id){ return this.cards.find(c=>c.id===id); }
+  addCard(card){ this.cards.push(card); this.save(); }
+  updateCard(id, patch){
+    const c = this.getCard(id);
+    if(!c) return;
+    Object.assign(c, patch);
+    c.updatedAt = Date.now();
+    this.save();
+  }
+  deleteCard(id){
+    this.cards = this.cards.filter(c=>c.id!==id);
+    this.cards.forEach(c=>{ c.dependencies = c.dependencies.filter(d=>d!==id); });
+    this.save();
+  }
+  replaceAll(cards){ this.cards = cards; this.save(); }
+}
+
+/* ============================================================
+   SEED DATA
+   ============================================================ */
+class SeedData{
+  static checklistTemplate(){
+    const groups = [
+      ['Обязательность', ['Kazakhstan','USA','EU','MENA']],
+      ['Способ акцепта', ['Clickwrap','Подписание','Order Form']],
+      ['Отображение', ['Website','Registration','Personal Cabinet','Payment','Document History']],
+      ['Получение', ['Before Registration','During Registration','After Registration','After Payment','Monthly','By Request']],
+      ['Хранение', ['User ID','Company ID','Timestamp','IP','Document Version','Language','Acceptance Status','Acceptance Method','Accepted By']],
+      ['Что доступно клиенту', ['Download PDF','View Online','Version History','Acceptance Date','Current Version']],
+      ['Требования разработке', ['Documents Page','Acceptance Checkbox','Acceptance History','Versioning','Auto Generation','Email Notification','API','Logs']],
     ];
+    return groups.map(([title, items]) => ({
+      id: uid('chk'),
+      title,
+      items: items.map(label => ({id:uid('itm'), label, checked:false}))
+    }));
+  }
+  static applyChecked(checklists, checkedMap){
+    checklists.forEach(group=>{
+      const set = checkedMap[group.title];
+      if(!set) return;
+      group.items.forEach(item=>{ if(set.includes(item.label)) item.checked = true; });
+    });
+    return checklists;
+  }
+  static legalCard(id, title, description, owner, status, priority, checkedMap, deps){
+    const checklists = SeedData.applyChecked(SeedData.checklistTemplate(), checkedMap);
+    return {
+      id, title, description, department:'Legal', status, priority, owner,
+      comments:[], dependencies: deps || [], checklists,
+      countries: (checkedMap['Обязательность'] || []).slice(),
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
+  }
+  static simpleCard(id, title, description, department, owner, status, priority, deps){
+    return {
+      id, title, description, department, status, priority, owner,
+      comments:[], dependencies: deps || [], checklists:[], countries:[],
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
+  }
+  static build(){
+    const cards = [];
 
-    let current = "reg-company";
+    cards.push(SeedData.legalCard('c1','Terms of Service',
+      'Основной договор оферты для пользователей платформы транзакционной модели.',
+      'Aigerim (Legal)','Approved','High',
+      {'Обязательность':['Kazakhstan','USA','EU'],
+       'Способ акцепта':['Clickwrap'],
+       'Отображение':['Website','Registration'],
+       'Получение':['Before Registration','During Registration'],
+       'Хранение':['User ID','Timestamp','IP','Acceptance Status','Acceptance Method','Accepted By'],
+       'Что доступно клиенту':['Download PDF','View Online','Acceptance Date'],
+       'Требования разработке':['Documents Page','Acceptance Checkbox','Acceptance History','Versioning']}, []));
 
-    function fillProgress(root) {
-      root.querySelectorAll(".progress").forEach((el) => {
-        const filled = Number(el.dataset.filled || 0);
-        const total = Number(el.dataset.total || 5);
-        el.innerHTML = "";
-        for (let i = 0; i < total; i++) {
-          const s = document.createElement("span");
-          if (i < filled) s.classList.add("on");
-          el.appendChild(s);
+    cards.push(SeedData.legalCard('c2','DPA',
+      'Соглашение об обработке данных для B2B клиентов и партнёров.',
+      'Aigerim (Legal)','Approved','High',
+      {'Обязательность':['Kazakhstan','USA','EU'],
+       'Способ акцепта':['Clickwrap','Order Form'],
+       'Отображение':['Website','Registration','Personal Cabinet'],
+       'Получение':['During Registration','By Request'],
+       'Хранение':['User ID','Company ID','Timestamp','Document Version','Acceptance Status'],
+       'Что доступно клиенту':['Download PDF','View Online','Version History'],
+       'Требования разработке':['Documents Page','Versioning','API']}, ['c4']));
+
+    cards.push(SeedData.legalCard('c3','Biometric Addendum',
+      'Дополнение к DPA для обработки биометрических данных (MENA/EU).',
+      'Aigerim (Legal)','Blocked','High',
+      {'Обязательность':['EU','MENA'],
+       'Способ акцепта':['Подписание'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['By Request'],
+       'Хранение':['User ID','Company ID','Timestamp','Acceptance Status','Accepted By'],
+       'Что доступно клиенту':['View Online'],
+       'Требования разработке':['Documents Page']}, ['c2']));
+
+    cards.push(SeedData.legalCard('c4','Privacy Policy',
+      'Политика конфиденциальности, регулирующая сбор и использование персональных данных.',
+      'Aigerim (Legal)','Approved','High',
+      {'Обязательность':['Kazakhstan','USA','EU','MENA'],
+       'Способ акцепта':['Clickwrap'],
+       'Отображение':['Website','Registration'],
+       'Получение':['Before Registration'],
+       'Хранение':['User ID','Timestamp','IP','Acceptance Status','Acceptance Method'],
+       'Что доступно клиенту':['Download PDF','View Online','Acceptance Date'],
+       'Требования разработке':['Documents Page','Acceptance Checkbox','Acceptance History']}, []));
+
+    cards.push(SeedData.legalCard('c5','Acceptable Use Policy',
+      'Правила допустимого использования платформы, включая антифрод-ограничения.',
+      'Nurlan (Operations)','Discussion','Medium',
+      {'Обязательность':['Kazakhstan','USA'],
+       'Способ акцепта':['Clickwrap'],
+       'Отображение':['Website','Registration'],
+       'Получение':['During Registration'],
+       'Хранение':['User ID','Timestamp','Acceptance Status']}, ['c1']));
+
+    cards.push(SeedData.legalCard('c6','Pricing / Rate Card',
+      'Тарифная сетка комиссий по новой транзакционной модели.',
+      'Marat (Finance)','Approved','High',
+      {'Обязательность':['Kazakhstan','USA','EU'],
+       'Способ акцепта':['Order Form'],
+       'Отображение':['Website','Payment'],
+       'Получение':['By Request'],
+       'Хранение':['Company ID','Timestamp','Document Version'],
+       'Что доступно клиенту':['Download PDF','Current Version'],
+       'Требования разработке':['Documents Page','Versioning']}, []));
+
+    cards.push(SeedData.legalCard('c7','Enterprise MSA',
+      'Рамочное соглашение для крупных B2B клиентов.',
+      'Aigerim (Legal)','Discussion','Medium',
+      {'Обязательность':['USA','EU'],
+       'Способ акцепта':['Подписание'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['By Request'],
+       'Хранение':['Company ID','Timestamp','Document Version','Acceptance Status'],
+       'Что доступно клиенту':['Download PDF','Version History']}, ['c1']));
+
+    cards.push(SeedData.legalCard('c8','Order Form',
+      'Форма заказа/подключения к тарифу в рамках MSA.',
+      'Marat (Finance)','Discussion','Medium',
+      {'Обязательность':['USA','EU'],
+       'Способ акцепта':['Order Form'],
+       'Отображение':['Personal Cabinet','Payment'],
+       'Получение':['By Request'],
+       'Хранение':['Company ID','Timestamp','Document Version']}, ['c6','c7']));
+
+    cards.push(SeedData.legalCard('c9','SLA',
+      'Соглашение об уровне сервиса для Enterprise клиентов.',
+      'Nurlan (Operations)','Discussion','Medium',
+      {'Обязательность':['USA','EU'],
+       'Способ акцепта':['Подписание'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['By Request'],
+       'Хранение':['Company ID','Document Version'],
+       'Что доступно клиенту':['Download PDF']}, ['c7']));
+
+    cards.push(SeedData.legalCard('c10','Invoice',
+      'Автоматически формируемый счёт по транзакциям.',
+      'Saltanat (Accounting)','Approved','High',
+      {'Обязательность':['Kazakhstan','USA','EU'],
+       'Отображение':['Personal Cabinet','Payment','Document History'],
+       'Получение':['Monthly','After Payment'],
+       'Хранение':['Company ID','Timestamp','Document Version'],
+       'Что доступно клиенту':['Download PDF','View Online'],
+       'Требования разработке':['Documents Page','Auto Generation','Email Notification']}, ['c6','c8']));
+
+    cards.push(SeedData.legalCard('c11','Receipt',
+      'Квитанция об оплате, выдаётся клиенту после транзакции.',
+      'Saltanat (Accounting)','Approved','Low',
+      {'Обязательность':['Kazakhstan','USA'],
+       'Отображение':['Payment','Document History'],
+       'Получение':['After Payment'],
+       'Хранение':['Timestamp','Document Version'],
+       'Что доступно клиенту':['Download PDF','View Online'],
+       'Требования разработке':['Auto Generation']}, ['c10']));
+
+    cards.push(SeedData.legalCard('c12','Monthly Usage Statement',
+      'Ежемесячная выписка по использованию сервиса.',
+      'Saltanat (Accounting)','After MVP','Low',
+      {'Обязательность':['USA','EU'],
+       'Отображение':['Personal Cabinet','Document History'],
+       'Получение':['Monthly'],
+       'Хранение':['Company ID','Document Version'],
+       'Что доступно клиенту':['Download PDF'],
+       'Требования разработке':['Auto Generation','Email Notification']}, ['c10']));
+
+    cards.push(SeedData.legalCard('c13','Monthly Service Report / Act',
+      'Ежемесячный акт оказанных услуг для B2B клиентов.',
+      'Saltanat (Accounting)','After MVP','Low',
+      {'Обязательность':['USA','EU'],
+       'Способ акцепта':['Подписание'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['Monthly'],
+       'Хранение':['Company ID','Document Version'],
+       'Что доступно клиенту':['Download PDF']}, ['c12']));
+
+    cards.push(SeedData.legalCard('c14','W-9',
+      'Налоговая форма для US-контрагентов.',
+      'Saltanat (Accounting)','Approved','Medium',
+      {'Обязательность':['USA'],
+       'Способ акцепта':['Подписание'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['By Request'],
+       'Хранение':['Company ID','Document Version'],
+       'Что доступно клиенту':['Download PDF']}, []));
+
+    cards.push(SeedData.legalCard('c15','IRS Form 6166',
+      'Сертификат налогового резидентства США для международных выплат.',
+      'Saltanat (Accounting)','Blocked','Medium',
+      {'Обязательность':['USA'],
+       'Отображение':['Personal Cabinet'],
+       'Получение':['By Request'],
+       'Хранение':['Document Version'],
+       'Что доступно клиенту':['Download PDF']}, ['c14']));
+
+    // Finance
+    cards.push(SeedData.simpleCard('f1','Transaction Fee Structure','Определить проценты комиссии по типам транзакций для новой модели.','Finance','Marat (Finance)','Discussion','High',['c6']));
+    cards.push(SeedData.simpleCard('f2','Currency & FX Handling','Определить поддерживаемые валюты и маржу конвертации.','Finance','Marat (Finance)','Discussion','Medium',[]));
+    cards.push(SeedData.simpleCard('f3','Refund & Chargeback Policy','Определить окно возврата и ответственность за чарджбэки.','Finance','Marat (Finance)','Blocked','High',['c1']));
+    cards.push(SeedData.simpleCard('f4','Payout Schedule','Определить периодичность выплат мерчантам/партнёрам.','Finance','Marat (Finance)','After MVP','Medium',['f1']));
+
+    // Accounting
+    cards.push(SeedData.simpleCard('a1','Revenue Recognition Method','Подтвердить подход ASC606/IFRS15 для транзакционной выручки.','Accounting','Saltanat (Accounting)','Discussion','High',['f1']));
+    cards.push(SeedData.simpleCard('a2','Tax Invoice Automation','Автоматизировать формирование налоговых счетов по транзакциям.','Accounting','Saltanat (Accounting)','Discussion','Medium',['c10','c14']));
+    cards.push(SeedData.simpleCard('a3','Chart of Accounts Update','Добавить новые счета ГК для транзакционной выручки.','Accounting','Saltanat (Accounting)','After MVP','Low',['a1']));
+
+    // Operations
+    cards.push(SeedData.simpleCard('o1','Fraud & Risk Review Process','Определить пороги ручной проверки для высокорисковых транзакций.','Operations','Nurlan (Operations)','Discussion','High',['c5']));
+    cards.push(SeedData.simpleCard('o2','Customer Support SLA for Disputes','Определить время реакции по спорным транзакциям.','Operations','Nurlan (Operations)','Discussion','Medium',['c9']));
+    cards.push(SeedData.simpleCard('o3','Merchant Onboarding Flow','Определить шаги KYB для новых транзакционных мерчантов.','Operations','Nurlan (Operations)','Blocked','High',['c1','c2']));
+
+    // CEO
+    cards.push(SeedData.simpleCard('ceo1','Launch Date Decision','Утвердить дату запуска новой транзакционной модели.','CEO','Yerlan (CEO)','Discussion','High',['f1','a1','o1']));
+    cards.push(SeedData.simpleCard('ceo2','Pricing Strategy Approval','Финальное утверждение тарифной политики.','CEO','Yerlan (CEO)','Discussion','High',['c6','f1']));
+    cards.push(SeedData.simpleCard('ceo3','MENA Market Risk Acceptance','Принятие юридических/комплаенс рисков для запуска в MENA.','CEO','Yerlan (CEO)','Blocked','High',['c3','c4']));
+
+    // Development (manual, supplementary to the auto-generated requirement list)
+    cards.push(SeedData.simpleCard('d1','Payment Gateway Provider Selection','Выбрать основного платёжного провайдера/шлюз для транзакционной модели.','Development','Daniyar (Dev Lead)','Discussion','High',['f1']));
+
+    return cards;
+  }
+}
+
+/* ============================================================
+   SEARCH / FILTER ENGINE
+   ============================================================ */
+class SearchEngine{
+  static matches(card, query){
+    if(!query) return true;
+    const q = query.toLowerCase();
+    if(card.title.toLowerCase().includes(q)) return true;
+    if((card.description||'').toLowerCase().includes(q)) return true;
+    if((card.owner||'').toLowerCase().includes(q)) return true;
+    if(card.department.toLowerCase().includes(q)) return true;
+    if((card.comments||[]).some(c => c.text.toLowerCase().includes(q) || c.author.toLowerCase().includes(q))) return true;
+    return false;
+  }
+  static applyFilters(cards, filters){
+    filters = filters || {};
+    return cards.filter(c=>{
+      if(filters.department && c.department !== filters.department) return false;
+      if(filters.status && c.status !== filters.status) return false;
+      if(filters.owner && c.owner !== filters.owner) return false;
+      if(filters.country && !(c.countries||[]).includes(filters.country)) return false;
+      return true;
+    });
+  }
+  static run(cards, opts){
+    opts = opts || {};
+    let list = SearchEngine.applyFilters(cards, opts.filters);
+    if(opts.search) list = list.filter(c=>SearchEngine.matches(c, opts.search));
+    return list;
+  }
+}
+
+/* ============================================================
+   DEVELOPMENT AUTO-REQUIREMENTS
+   ============================================================ */
+class DevRequirements{
+  static build(cards){
+    const buckets = {Frontend:[], Backend:[], API:[], Admin:[], UI:[], Other:[]};
+    const seen = new Map();
+    cards.forEach(card=>{
+      (card.checklists||[]).forEach(group=>{
+        group.items.forEach(item=>{
+          if(!item.checked) return;
+          const cat = DevRequirements.CATEGORY_MAP[item.label] || 'Other';
+          const key = cat + '::' + item.label + '::' + group.title;
+          if(!seen.has(key)){
+            const entry = {label:item.label, group:group.title, sources:[]};
+            seen.set(key, entry);
+            buckets[cat].push(entry);
+          }
+          seen.get(key).sources.push({id:card.id, title:card.title});
+        });
+      });
+    });
+    return buckets;
+  }
+}
+DevRequirements.CATEGORY_MAP = {
+  'Website':'Frontend','Registration':'Frontend','Personal Cabinet':'Frontend','Payment':'Frontend','Document History':'Frontend',
+  'Before Registration':'Backend','During Registration':'Backend','After Registration':'Backend','After Payment':'Backend','Monthly':'Backend','By Request':'Backend',
+  'User ID':'Admin','Company ID':'Admin','Timestamp':'Admin','IP':'Admin','Document Version':'Admin','Language':'Admin','Acceptance Status':'Admin','Acceptance Method':'Admin','Accepted By':'Admin',
+  'Download PDF':'UI','View Online':'UI','Version History':'UI','Acceptance Date':'UI','Current Version':'UI',
+  'Documents Page':'Frontend','Acceptance Checkbox':'Frontend','Acceptance History':'Backend','Versioning':'Backend','Auto Generation':'Backend','Email Notification':'Backend','API':'API','Logs':'Backend',
+  'Clickwrap':'Frontend','Подписание':'Admin','Order Form':'Backend',
+  'Kazakhstan':'Admin','USA':'Admin','EU':'Admin','MENA':'Admin',
+};
+
+/* ============================================================
+   DEPENDENCY GRAPH LAYOUT
+   ============================================================ */
+class GraphLayout{
+  static computeLevels(cards){
+    const byId = new Map(cards.map(c=>[c.id,c]));
+    const cache = new Map();
+    function level(id, trail){
+      if(cache.has(id)) return cache.get(id);
+      if(trail.has(id)) return 0;
+      const card = byId.get(id);
+      if(!card) return 0;
+      const deps = (card.dependencies||[]).filter(d=>byId.has(d));
+      if(!deps.length){ cache.set(id,0); return 0; }
+      const nextTrail = new Set(trail); nextTrail.add(id);
+      const lvl = 1 + Math.max(...deps.map(d=>level(d, nextTrail)));
+      cache.set(id, lvl);
+      return lvl;
+    }
+    cards.forEach(c=>level(c.id, new Set()));
+    return cache;
+  }
+  static columns(cards){
+    const levels = GraphLayout.computeLevels(cards);
+    const maxLevel = cards.length ? Math.max(...Array.from(levels.values())) : 0;
+    const cols = Array.from({length:maxLevel+1}, ()=>[]);
+    cards.forEach(c=>cols[levels.get(c.id)||0].push(c));
+    return cols;
+  }
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+function computeStats(cards){
+  const byStatus = s => cards.filter(c=>c.status===s).length;
+  const needDept = d => cards.filter(c=>c.department===d && c.status!=='Approved').length;
+  return {
+    total: cards.length,
+    approved: byStatus('Approved'),
+    discussion: byStatus('Discussion'),
+    blocked: byStatus('Blocked'),
+    needCEO: needDept('CEO'),
+    needLegal: needDept('Legal'),
+    needFinance: needDept('Finance'),
+    needDevelopment: needDept('Development'),
+  };
+}
+function launchReadiness(cards){
+  const per = DEPARTMENTS.map(d=>{
+    const list = cards.filter(c=>c.department===d.id);
+    const approved = list.filter(c=>c.status==='Approved').length;
+    const pct = list.length ? Math.round(approved/list.length*100) : 0;
+    return {dept:d.id, pct, total:list.length, approved};
+  });
+  const overallApproved = cards.filter(c=>c.status==='Approved').length;
+  const overall = cards.length ? Math.round(overallApproved/cards.length*100) : 0;
+  return {overall, per};
+}
+
+/* ============================================================
+   EXPORT / IMPORT
+   ============================================================ */
+class ExportManager{
+  static download(filename, content, mime){
+    const blob = new Blob([content], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  static toJSON(cards){
+    ExportManager.download('decision-hub-export.json', JSON.stringify({cards, exportedAt:new Date().toISOString()}, null, 2), 'application/json');
+  }
+  static toMarkdown(cards){
+    let md = '# Decision Hub — Export\n\n_Exported: ' + new Date().toLocaleString() + '_\n\n';
+    DEPARTMENTS.forEach(dep=>{
+      const list = cards.filter(c=>c.department===dep.id);
+      if(!list.length) return;
+      md += '## ' + dep.label + '\n\n';
+      list.forEach(c=>{
+        md += '### ' + c.title + ' `[' + c.status + ']` (' + c.priority + ')\n\n';
+        md += '- Owner: ' + (c.owner || '—') + '\n- Description: ' + (c.description || '—') + '\n';
+        if(c.dependencies.length){
+          md += '- Depends on: ' + c.dependencies.map(id=>{ const d = cards.find(x=>x.id===id); return d ? d.title : id; }).join(', ') + '\n';
         }
+        (c.checklists||[]).forEach(g=>{
+          md += '\n**' + g.title + '**\n';
+          g.items.forEach(it=>{ md += '- [' + (it.checked?'x':' ') + '] ' + it.label + '\n'; });
+        });
+        if(c.comments && c.comments.length){
+          md += '\n**Comments**\n';
+          c.comments.forEach(cm=>{ md += '- ' + cm.author + ': ' + cm.text + '\n'; });
+        }
+        md += '\n---\n\n';
       });
-    }
+    });
+    ExportManager.download('decision-hub-export.md', md, 'text/markdown');
+  }
+  static toCSV(cards){
+    const headers = ['ID','Title','Department','Status','Priority','Owner','Description','Dependencies','Comments'];
+    const rows = cards.map(c=>[
+      c.id, c.title, c.department, c.status, c.priority, c.owner || '',
+      (c.description || '').replace(/\n/g,' '),
+      c.dependencies.map(id=>{ const d = cards.find(x=>x.id===id); return d ? d.title : id; }).join('; '),
+      (c.comments || []).length
+    ]);
+    const escCsv = v => '"' + String(v).replace(/"/g,'""') + '"';
+    const csv = [headers, ...rows].map(r=>r.map(escCsv).join(',')).join('\n');
+    ExportManager.download('decision-hub-export.csv', csv, 'text/csv');
+  }
+  static toHTML(cards){
+    let body = '<h1>Decision Hub — Snapshot</h1><p>Exported: ' + new Date().toLocaleString() + '</p>';
+    DEPARTMENTS.forEach(dep=>{
+      const list = cards.filter(c=>c.department===dep.id);
+      if(!list.length) return;
+      body += '<h2>' + esc(dep.label) + '</h2>';
+      list.forEach(c=>{
+        body += '<div style="border:1px solid #e4e4e7;border-radius:10px;padding:16px;margin-bottom:12px;">'
+          + '<h3>' + esc(c.title) + ' <small>[' + esc(c.status) + ' / ' + esc(c.priority) + ']</small></h3>'
+          + '<p>' + esc(c.description||'') + '</p>'
+          + '<p><b>Owner:</b> ' + esc(c.owner||'—') + '</p>'
+          + (c.checklists||[]).map(g=>'<b>' + esc(g.title) + '</b><ul>' + g.items.map(it=>'<li>' + (it.checked?'✅':'⬜') + ' ' + esc(it.label) + '</li>').join('') + '</ul>').join('')
+          + '</div>';
+      });
+    });
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>Decision Hub Snapshot</title></head><body style="font-family:sans-serif;max-width:900px;margin:40px auto;">' + body + '</body></html>';
+    ExportManager.download('decision-hub-export.html', html, 'text/html');
+  }
+  static importJSON(file, onDone){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        const cards = Array.isArray(data) ? data : data.cards;
+        if(!Array.isArray(cards)) throw new Error('Invalid format: expected {cards:[...]}');
+        onDone(cards);
+      }catch(e){
+        alert('Import failed: ' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+}
 
-    function renderTabs() {
-      const map = {
-        Registration: document.getElementById("tabs-reg"),
-        Cabinet: document.getElementById("tabs-cab"),
-        Flow: document.getElementById("tabs-flow"),
+/* ============================================================
+   HTML TEMPLATE HELPERS
+   ============================================================ */
+function renderShell(){
+  return '' +
+  '<div class="app" id="app">' +
+    '<aside class="sidebar" id="sidebar">' +
+      '<div class="sidebar-brand">' +
+        '<div class="brand-mark">DH</div>' +
+        '<div class="brand-text"><div class="brand-title">Decision Hub</div><div class="brand-sub secondary-ui">Transactional Model Grooming</div></div>' +
+      '</div>' +
+      '<nav class="sidebar-nav" id="sidebar-nav">' +
+        NAV_ITEMS.map(n=>'<button class="nav-item" data-action="nav" data-view="'+n.id+'"><span class="nav-icon">'+n.icon+'</span><span class="nav-label">'+esc(n.label)+'</span></button>').join('') +
+      '</nav>' +
+    '</aside>' +
+    '<div class="main-col">' +
+      '<header class="topbar">' +
+        '<button class="icon-btn mobile-only" data-action="toggle-sidebar">☰</button>' +
+        '<div class="search-wrap"><input type="text" id="search-input" placeholder="Search decisions, comments, owners, departments…"></div>' +
+        '<div class="topbar-actions">' +
+          '<button class="btn-secondary" data-action="toggle-meeting">Meeting Mode</button>' +
+          '<div class="export-wrap" id="export-menu-wrap">' +
+            '<button class="btn-secondary" data-action="toggle-export-menu">Export ▾</button>' +
+            '<div class="export-menu" id="export-menu">' +
+              '<button data-action="export-json">Export JSON</button>' +
+              '<button data-action="export-md">Export Markdown</button>' +
+              '<button data-action="export-csv">Export CSV</button>' +
+              '<button data-action="export-html">Export HTML</button>' +
+              '<hr>' +
+              '<button data-action="trigger-import">Import JSON…</button>' +
+            '</div>' +
+          '</div>' +
+          '<button class="btn-primary" data-action="open-new-card">+ New Card</button>' +
+        '</div>' +
+      '</header>' +
+      '<main id="main-content"></main>' +
+    '</div>' +
+  '</div>' +
+  '<div id="modal-root"></div>' +
+  '<input type="file" id="import-file-input" accept="application/json" style="display:none">';
+}
+
+function statTile(label, value, tone){
+  return '<div class="stat-tile ' + (tone||'') + '"><div class="stat-value">' + value + '</div><div class="stat-label">' + esc(label) + '</div></div>';
+}
+
+function renderFilterBar(app, opts){
+  opts = opts || {department:true, status:true, owner:true, country:true};
+  const cards = app.store.cards;
+  const owners = [...new Set(cards.map(c=>c.owner).filter(Boolean))].sort();
+  const countries = [...new Set(cards.flatMap(c=>c.countries||[]))].sort();
+  const f = app.state.filters;
+  let html = '<div class="filter-bar secondary-ui">';
+  if(opts.department){
+    html += '<select data-action="filter-change" data-field="department"><option value="">All Departments</option>' +
+      DEPARTMENTS.map(d=>'<option value="'+d.id+'" '+(f.department===d.id?'selected':'')+'>'+esc(d.label)+'</option>').join('') + '</select>';
+  }
+  if(opts.status){
+    html += '<select data-action="filter-change" data-field="status"><option value="">All Statuses</option>' +
+      STATUSES.map(s=>'<option value="'+s+'" '+(f.status===s?'selected':'')+'>'+s+'</option>').join('') + '</select>';
+  }
+  if(opts.owner){
+    html += '<select data-action="filter-change" data-field="owner"><option value="">All Owners</option>' +
+      owners.map(o=>'<option value="'+esc(o)+'" '+(f.owner===o?'selected':'')+'>'+esc(o)+'</option>').join('') + '</select>';
+  }
+  if(opts.country){
+    html += '<select data-action="filter-change" data-field="country"><option value="">All Countries</option>' +
+      countries.map(c=>'<option value="'+esc(c)+'" '+(f.country===c?'selected':'')+'>'+esc(c)+'</option>').join('') + '</select>';
+  }
+  if(f.department || f.status || f.owner || f.country){
+    html += '<button class="btn-mini" data-action="clear-filters">Clear filters</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderCardTile(card){
+  const sc = STATUS_COLORS[card.status];
+  const pc = PRIORITY_COLORS[card.priority];
+  let progress = '';
+  if(card.checklists && card.checklists.length){
+    const total = card.checklists.reduce((s,g)=>s+g.items.length,0);
+    const checked = card.checklists.reduce((s,g)=>s+g.items.filter(i=>i.checked).length,0);
+    const pct = total ? Math.round(checked/total*100) : 0;
+    progress = '<div class="tile-progress"><div class="tile-progress-bar" style="width:'+pct+'%"></div></div>' +
+      '<span class="tile-progress-label secondary-ui">'+checked+'/'+total+' checklist items</span>';
+  }
+  return '<div class="card-tile" draggable="true" data-action="open-card" data-card="'+card.id+'">' +
+    '<div class="tile-top">' +
+      '<span class="badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+card.status+'</span>' +
+      '<span class="badge" style="background:'+pc.bg+';color:'+pc.fg+'">'+card.priority+'</span>' +
+    '</div>' +
+    '<h3>'+esc(card.title)+'</h3>' +
+    '<p class="tile-desc">'+esc(card.description||'')+'</p>' +
+    '<div class="tile-meta secondary-ui">' +
+      '<span class="dept-dot" style="background:'+deptColor(card.department)+'"></span>'+esc(card.department) +
+      (card.owner ? ' · '+esc(card.owner) : '') +
+      (card.dependencies.length ? ' · '+card.dependencies.length+' deps' : '') +
+      ((card.comments && card.comments.length) ? ' · '+card.comments.length+' comments' : '') +
+    '</div>' +
+    progress +
+  '</div>';
+}
+
+function renderChecklistGroup(card, group){
+  return '<div class="chk-group" data-group="'+group.id+'">' +
+    '<div class="chk-group-head">' +
+      '<h4 data-editable="checklist-title" data-card="'+card.id+'" data-group="'+group.id+'" title="Double-click to rename">'+esc(group.title)+'</h4>' +
+      '<button class="icon-btn danger secondary-ui" data-action="remove-checklist-group" data-card="'+card.id+'" data-group="'+group.id+'" title="Remove checklist">×</button>' +
+    '</div>' +
+    '<ul class="chk-items">' +
+      group.items.map(item=>
+        '<li class="chk-item">' +
+          '<label>' +
+            '<input type="checkbox" data-action="toggle-checklist-item" data-card="'+card.id+'" data-group="'+group.id+'" data-item="'+item.id+'" '+(item.checked?'checked':'')+'>' +
+            '<span data-editable="checklist-item-label" data-card="'+card.id+'" data-group="'+group.id+'" data-item="'+item.id+'">'+esc(item.label)+'</span>' +
+          '</label>' +
+          '<button class="icon-btn danger secondary-ui" data-action="remove-checklist-item" data-card="'+card.id+'" data-group="'+group.id+'" data-item="'+item.id+'">×</button>' +
+        '</li>').join('') +
+    '</ul>' +
+    '<form class="inline-add-form secondary-ui" data-action="add-checklist-item-form" data-card="'+card.id+'" data-group="'+group.id+'">' +
+      '<input type="text" class="inline-add-input" placeholder="+ Add item">' +
+      '<button type="submit" class="btn-mini">Add</button>' +
+    '</form>' +
+  '</div>';
+}
+
+function renderCardModal(card, app){
+  const store = app.store;
+  const deps = card.dependencies.map(id=>store.getCard(id)).filter(Boolean);
+  const availableForDeps = store.cards.filter(c=>c.id!==card.id && !card.dependencies.includes(c.id));
+  return '<div class="modal-backdrop" data-action="close-modal">' +
+    '<div class="modal card-modal">' +
+      '<div class="modal-header">' +
+        '<div class="modal-header-main">' +
+          '<span class="dept-dot" style="background:'+deptColor(card.department)+';margin-top:6px;"></span>' +
+          '<h2 data-editable="title" data-card="'+card.id+'">'+esc(card.title)+'</h2>' +
+        '</div>' +
+        '<button class="icon-btn" data-action="close-modal">×</button>' +
+      '</div>' +
+      '<div class="modal-meta muted secondary-ui">ID: '+card.id+' · Created '+formatDate(card.createdAt)+' · Updated '+formatDate(card.updatedAt)+'</div>' +
+      '<div class="modal-fields">' +
+        '<div class="field"><label>Department</label><select data-action="field-change" data-field="department" data-card="'+card.id+'">' +
+          DEPARTMENTS.map(d=>'<option value="'+d.id+'" '+(d.id===card.department?'selected':'')+'>'+esc(d.label)+'</option>').join('') + '</select></div>' +
+        '<div class="field"><label>Status</label><select data-action="field-change" data-field="status" data-card="'+card.id+'">' +
+          STATUSES.map(s=>'<option value="'+s+'" '+(s===card.status?'selected':'')+'>'+s+'</option>').join('') + '</select></div>' +
+        '<div class="field"><label>Priority</label><select data-action="field-change" data-field="priority" data-card="'+card.id+'">' +
+          PRIORITIES.map(p=>'<option value="'+p+'" '+(p===card.priority?'selected':'')+'>'+p+'</option>').join('') + '</select></div>' +
+        '<div class="field"><label>Owner</label><div data-editable="owner" data-card="'+card.id+'" class="editable-text">'+(card.owner ? esc(card.owner) : '<span class="muted">— double-click to set —</span>')+'</div></div>' +
+      '</div>' +
+      (card.countries && card.countries.length ? '<div class="country-tags">'+card.countries.map(c=>'<span class="tag">'+esc(c)+'</span>').join('')+'</div>' : '') +
+      '<div class="field"><label>Description</label><div data-editable="description" data-card="'+card.id+'" class="editable-text block">'+(card.description ? esc(card.description) : '<span class="muted">— double-click to add description —</span>')+'</div></div>' +
+      '<div class="field"><label>Dependencies</label>' +
+        '<div class="dep-chips">' + (deps.length ? deps.map(d=>'<span class="tag dep-tag">'+esc(d.title)+' <button data-action="remove-dependency" data-card="'+card.id+'" data-dep="'+d.id+'">×</button></span>').join('') : '<span class="muted">No dependencies</span>') + '</div>' +
+        (availableForDeps.length ? '<select data-action="add-dependency" data-card="'+card.id+'"><option value="">+ Add dependency…</option>' + availableForDeps.map(c=>'<option value="'+c.id+'">'+esc(c.title)+' ('+esc(c.department)+')</option>').join('') + '</select>' : '') +
+      '</div>' +
+      '<div class="field"><label>Checklists</label>' +
+        (card.checklists||[]).map(g=>renderChecklistGroup(card,g)).join('' ) +
+        ((card.checklists||[]).length ? '' : '<p class="muted">No checklists yet.</p>') +
+        '<form class="inline-add-form" data-action="add-checklist-group-form" data-card="'+card.id+'">' +
+          '<input type="text" class="inline-add-input" placeholder="+ Add new checklist">' +
+          '<button type="submit" class="btn-mini">Add</button>' +
+        '</form>' +
+      '</div>' +
+      '<div class="field"><label>Comments ('+(card.comments||[]).length+')</label>' +
+        '<div class="comments-list">' +
+          ((card.comments||[]).length ? (card.comments||[]).map(cm=>
+            '<div class="comment"><div class="comment-head"><b>'+esc(cm.author)+'</b><span class="muted">'+formatDate(cm.ts)+'</span></div><div>'+esc(cm.text)+'</div></div>'
+          ).join('') : '<p class="muted">No comments yet.</p>') +
+        '</div>' +
+        '<form class="comment-form" data-action="add-comment-form" data-card="'+card.id+'">' +
+          '<input type="text" class="comment-author-input" placeholder="Your name" value="'+esc(app.currentUser())+'">' +
+          '<textarea class="comment-text-input" placeholder="Add a comment for this decision…" rows="2"></textarea>' +
+          '<button type="submit" class="btn-primary btn-mini" style="align-self:flex-start;">Add Comment</button>' +
+        '</form>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button class="btn-danger" data-action="delete-card" data-card="'+card.id+'">Delete Card</button>' +
+        '<span class="muted secondary-ui">Autosaved to this browser</span>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderNewCardModal(app){
+  const presetDept = app.viewToDept(app.state.view) || 'Legal';
+  return '<div class="modal-backdrop" data-action="close-modal">' +
+    '<div class="modal new-card-modal">' +
+      '<div class="modal-header"><h2 style="cursor:default;">New Card</h2><button class="icon-btn" data-action="close-modal">×</button></div>' +
+      '<form data-action="new-card-form">' +
+        '<div class="field"><label>Title</label><input type="text" name="title" required></div>' +
+        '<div class="field"><label>Description</label><textarea name="description" rows="3"></textarea></div>' +
+        '<div class="modal-fields">' +
+          '<div class="field"><label>Department</label><select name="department">' + DEPARTMENTS.map(d=>'<option value="'+d.id+'" '+(d.id===presetDept?'selected':'')+'>'+esc(d.label)+'</option>').join('') + '</select></div>' +
+          '<div class="field"><label>Status</label><select name="status">' + STATUSES.map(s=>'<option value="'+s+'" '+(s==='Discussion'?'selected':'')+'>'+s+'</option>').join('') + '</select></div>' +
+          '<div class="field"><label>Priority</label><select name="priority">' + PRIORITIES.map(p=>'<option value="'+p+'" '+(p==='Medium'?'selected':'')+'>'+p+'</option>').join('') + '</select></div>' +
+          '<div class="field"><label>Owner</label><input type="text" name="owner" placeholder="e.g. Aigerim (Legal)"></div>' +
+        '</div>' +
+        '<div class="modal-footer"><span></span><button type="submit" class="btn-primary">Create Card</button></div>' +
+      '</form>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderOverview(app){
+  const cards = app.store.cards;
+  const stats = computeStats(cards);
+  const readiness = launchReadiness(cards);
+  return '<div class="view-header"><h1>Overview</h1><p class="muted">Cross-functional grooming session — new transactional model</p></div>' +
+    '<div class="stat-grid">' +
+      statTile('Business Decisions', stats.total) +
+      statTile('Approved', stats.approved, 'approved') +
+      statTile('Discussion', stats.discussion, 'discussion') +
+      statTile('Blocked', stats.blocked, 'blocked') +
+      statTile('Need CEO', stats.needCEO) +
+      statTile('Need Legal', stats.needLegal) +
+      statTile('Need Finance', stats.needFinance) +
+      statTile('Need Development', stats.needDevelopment) +
+    '</div>' +
+    '<div class="panel">' +
+      '<h2>Launch Readiness</h2>' +
+      '<div class="readiness-overall"><div class="readiness-bar"><div class="readiness-fill" style="width:'+readiness.overall+'%"></div></div><span>'+readiness.overall+'% overall</span></div>' +
+      readiness.per.map(r=>
+        '<div class="readiness-row">' +
+          '<span class="readiness-label"><span class="dept-dot" style="background:'+deptColor(r.dept)+'"></span>'+esc(r.dept)+'</span>' +
+          '<div class="readiness-bar"><div class="readiness-fill" style="width:'+r.pct+'%;background:'+deptColor(r.dept)+'"></div></div>' +
+          '<span class="readiness-pct">'+r.pct+'% <span class="muted">('+r.approved+'/'+r.total+')</span></span>' +
+        '</div>').join('') +
+    '</div>';
+}
+
+function renderDepartment(app, dept){
+  const base = app.store.cards.filter(c=>c.department===dept);
+  const list = SearchEngine.run(base, {filters: app.state.filters});
+  const approved = base.filter(c=>c.status==='Approved').length;
+  return '<div class="view-header"><h1>'+esc(dept)+'</h1><p class="muted">'+base.length+' decisions · '+approved+' approved</p></div>' +
+    renderFilterBar(app, {department:false, status:true, owner:true, country:true}) +
+    '<div class="tile-grid">' + (list.map(renderCardTile).join('') || '<p class="muted">No decisions match current filters.</p>') + '</div>';
+}
+
+function renderKanban(app){
+  const list = SearchEngine.run(app.store.cards, {filters: app.state.filters});
+  return '<div class="view-header"><h1>Decision Board</h1><p class="muted">Drag cards between columns to update status.</p></div>' +
+    renderFilterBar(app) +
+    '<div class="kanban-board">' +
+      STATUSES.map(status=>{
+        const items = list.filter(c=>c.status===status);
+        return '<div class="kanban-col">' +
+          '<div class="kanban-col-head"><span class="dot" style="background:'+STATUS_COLORS[status].dot+'"></span><h3>'+status+'</h3><span class="count">'+items.length+'</span></div>' +
+          '<div class="kanban-col-body" data-dropzone data-status="'+status+'">' + items.map(renderCardTile).join('') + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+}
+
+function renderDevelopment(app){
+  const cards = app.store.cards;
+  const buckets = DevRequirements.build(cards);
+  const manual = cards.filter(c=>c.department==='Development');
+  const cats = ['Frontend','Backend','API','Admin','UI','Other'];
+  let colsHtml = '';
+  cats.forEach(cat=>{
+    const items = buckets[cat];
+    if(!items || !items.length) return;
+    colsHtml += '<div class="dev-col"><h3>'+cat+'</h3>' +
+      items.map(it=>
+        '<div class="dev-req">' +
+          '<div class="dev-req-label">'+esc(it.label)+'</div>' +
+          '<div class="dev-req-group">from: '+esc(it.group)+'</div>' +
+          '<div class="dev-req-sources">'+it.sources.map(s=>'<span class="tag mini" data-action="open-card" data-card="'+s.id+'">'+esc(s.title)+'</span>').join('')+'</div>' +
+        '</div>').join('') +
+    '</div>';
+  });
+  return '<div class="view-header"><h1>Development</h1><p class="muted">Auto-generated from checked requirement checkboxes across all decisions — no manual tasks.</p></div>' +
+    '<div class="dev-grid">' + (colsHtml || '<p class="muted">No requirements yet — check items in Legal/other checklists to populate this view.</p>') + '</div>' +
+    '<div class="panel"><h2>Additional Development Decisions</h2><div class="tile-grid">' +
+      (manual.map(renderCardTile).join('') || '<p class="muted">No manually created development decisions.</p>') +
+    '</div></div>';
+}
+
+function renderCEODashboard(app){
+  const cards = app.store.cards;
+  const stats = computeStats(cards);
+  const readiness = launchReadiness(cards);
+  const blockers = cards.filter(c=>c.status==='Blocked');
+  return '<div class="view-header"><h1>CEO Dashboard</h1><p class="muted">Executive summary for launch decision</p></div>' +
+    '<div class="panel"><h2>Launch Readiness</h2>' +
+      '<div class="readiness-overall"><div class="readiness-bar"><div class="readiness-fill" style="width:'+readiness.overall+'%"></div></div><span>'+readiness.overall+'% overall</span></div>' +
+      readiness.per.map(r=>
+        '<div class="readiness-row">' +
+          '<span class="readiness-label"><span class="dept-dot" style="background:'+deptColor(r.dept)+'"></span>'+esc(r.dept)+'</span>' +
+          '<div class="readiness-bar"><div class="readiness-fill" style="width:'+r.pct+'%;background:'+deptColor(r.dept)+'"></div></div>' +
+          '<span class="readiness-pct">'+r.pct+'%</span>' +
+        '</div>').join('') +
+    '</div>' +
+    '<div class="panel-grid">' +
+      '<div class="panel"><h2>Business Decisions</h2>' +
+        '<div class="mini-stat-row"><span>Approved</span><b>'+stats.approved+'</b></div>' +
+        '<div class="mini-stat-row"><span>Discussion</span><b>'+stats.discussion+'</b></div>' +
+        '<div class="mini-stat-row"><span>Blocked</span><b>'+stats.blocked+'</b></div>' +
+        '<div class="mini-stat-row"><span>Total</span><b>'+stats.total+'</b></div>' +
+      '</div>' +
+      '<div class="panel"><h2>Critical Blockers ('+blockers.length+')</h2>' +
+        (blockers.map(c=>
+          '<div class="blocker-row" data-action="open-card" data-card="'+c.id+'">' +
+            '<span class="dept-dot" style="background:'+deptColor(c.department)+'"></span>' +
+            '<span class="blocker-title">'+esc(c.title)+'</span>' +
+            '<span class="muted">'+esc(c.department)+' · '+esc(c.owner||'—')+'</span>' +
+          '</div>').join('') || '<p class="muted">No blockers 🎉</p>') +
+      '</div>' +
+    '</div>';
+}
+
+function renderGraph(app){
+  const cards = SearchEngine.run(app.store.cards, {filters: app.state.filters});
+  const cols = GraphLayout.columns(cards);
+  const colHtml = cols.map(col =>
+    '<div class="graph-col">' +
+      col.map(c=>
+        '<div class="graph-node" id="gnode-'+c.id+'" data-action="open-card" data-card="'+c.id+'" style="border-left-color:'+deptColor(c.department)+'">' +
+          '<div class="graph-node-dot" style="background:'+STATUS_COLORS[c.status].dot+'"></div>' +
+          '<div class="graph-node-title">'+esc(c.title)+'</div>' +
+          '<div class="graph-node-dept">'+esc(c.department)+' · '+esc(c.status)+'</div>' +
+        '</div>').join('') +
+    '</div>').join('');
+  return '<div class="view-header"><h1>Dependency Graph</h1><p class="muted">Arrows point from prerequisite → dependent decision. Click a node to open it.</p></div>' +
+    renderFilterBar(app) +
+    '<div class="graph-wrap" id="graph-wrap"><svg id="graph-svg"></svg><div class="graph-columns">' + (colHtml || '<p class="muted">No decisions match current filters.</p>') + '</div></div>';
+}
+
+/* ============================================================
+   MERMAID INTERACTION SCHEME
+   (auto-generated from live card/department data, kept in sync
+   by re-running these builders on every store change)
+   ============================================================ */
+function mermaidId(id){ return 'n_' + String(id).replace(/[^a-zA-Z0-9_]/g,'_'); }
+function mermaidLabel(str){
+  return String(str||'').replace(/"/g,'#quot;').replace(/[\r\n]+/g,' ').slice(0,70);
+}
+
+function buildDeptInteractionMermaid(app){
+  const cards = app.store.cards;
+  const deptStats = DEPARTMENTS.map(d=>{
+    const list = cards.filter(c=>c.department===d.id);
+    const approved = list.filter(c=>c.status==='Approved').length;
+    return {id:d.id, total:list.length, approved};
+  });
+  const edgeCounts = new Map();
+  cards.forEach(card=>{
+    (card.dependencies||[]).forEach(depId=>{
+      const dep = app.store.getCard(depId);
+      if(!dep || dep.department === card.department) return;
+      const key = dep.department + '::' + card.department;
+      edgeCounts.set(key, (edgeCounts.get(key)||0) + 1);
+    });
+  });
+  const lines = ['flowchart LR'];
+  deptStats.forEach(d=>{
+    if(!d.total) return;
+    const nid = mermaidId(d.id);
+    lines.push('  ' + nid + '["' + mermaidLabel(d.id) + '<br/>' + d.approved + '/' + d.total + ' approved"]');
+    lines.push('  style ' + nid + ' fill:' + deptColor(d.id) + '22,stroke:' + deptColor(d.id) + ',stroke-width:2px,color:#18181b');
+  });
+  edgeCounts.forEach((count, key)=>{
+    const [from, to] = key.split('::');
+    lines.push('  ' + mermaidId(from) + ' -->|' + count + '| ' + mermaidId(to));
+  });
+  if(!edgeCounts.size) lines.push('  %% no cross-department dependencies yet');
+  return lines.join('\n');
+}
+
+function buildLevelMermaid(app){
+  const cards = SearchEngine.run(app.store.cards, {filters: app.state.filters});
+  const cols = GraphLayout.columns(cards);
+  const idSet = new Set(cards.map(c=>c.id));
+  const lines = ['flowchart LR'];
+  cols.forEach((col, i)=>{
+    lines.push('  subgraph L' + i + ' ["Level ' + i + '"]');
+    lines.push('  direction TB');
+    col.forEach(c=>{
+      const nid = mermaidId(c.id);
+      lines.push('    ' + nid + '["' + mermaidLabel(c.title) + '<br/><small>' + mermaidLabel(c.department) + ' · ' + mermaidLabel(c.status) + '</small>"]');
+      const sc = STATUS_COLORS[c.status];
+      lines.push('    style ' + nid + ' fill:' + sc.bg + ',stroke:' + deptColor(c.department) + ',stroke-width:2px,color:' + sc.fg);
+    });
+    lines.push('  end');
+  });
+  cards.forEach(card=>{
+    (card.dependencies||[]).forEach(depId=>{
+      if(!idSet.has(depId)) return;
+      lines.push('  ' + mermaidId(depId) + ' --> ' + mermaidId(card.id));
+    });
+  });
+  if(!cards.length) lines.push('  empty["No decisions match current filters"]');
+  return lines.join('\n');
+}
+
+function renderScheme(app){
+  return '<div class="view-header"><h1>Interaction Scheme</h1>' +
+      '<p class="muted">Живые mermaid-диаграммы: взаимодействие департаментов и уровни зависимостей решений. Обновляются автоматически при любом изменении данных.</p></div>' +
+    renderFilterBar(app) +
+    '<div class="panel"><h2>Department Interaction</h2>' +
+      '<p class="muted" style="margin-bottom:10px;">Стрелки показывают, сколько решений одного департамента зависят от решений другого.</p>' +
+      '<div class="mermaid-wrap"><pre class="mermaid" id="mermaid-dept"></pre></div>' +
+    '</div>' +
+    '<div class="panel"><h2>Dependency Levels</h2>' +
+      '<p class="muted" style="margin-bottom:10px;">Решения сгруппированы по уровню (0 = нет зависимостей, далее — по глубине цепочки).</p>' +
+      '<div class="mermaid-wrap"><pre class="mermaid" id="mermaid-levels"></pre></div>' +
+    '</div>' +
+    '<div class="panel"><h2>Custom Diagram — User Scenarios</h2>' +
+      '<p class="muted" style="margin-bottom:10px;">Пользовательские сценарии по юрисдикциям. Редактируется вручную: правьте mermaid-код ниже, либо из консоли браузера — <code>app.setCustomMermaidSource("...", "'+app.state.customTab+'")</code> / <code>app.getCustomMermaidSource("'+app.state.customTab+'")</code>.</p>' +
+      '<div class="tab-bar">' +
+        CUSTOM_DIAGRAM_TABS.map(t=>'<button class="btn-mini'+(t.id===app.state.customTab?' active':'')+'" data-action="custom-tab" data-tab="'+t.id+'">'+esc(t.label)+'</button>').join('') +
+      '</div>' +
+      '<textarea id="mermaid-custom-source" class="mermaid-source-input" spellcheck="false">' + esc(app.customDiagrams[app.state.customTab]) + '</textarea>' +
+      '<div class="mermaid-wrap" style="margin-top:10px;"><pre class="mermaid" id="mermaid-custom"></pre></div>' +
+      '<p class="muted" id="mermaid-custom-error" style="margin-top:8px;color:var(--danger);"></p>' +
+    '</div>';
+}
+
+function renderSearchResults(app){
+  const list = SearchEngine.run(app.store.cards, {search: app.state.search, filters: app.state.filters});
+  return '<div class="view-header"><h1>Search results for "'+esc(app.state.search)+'"</h1>' +
+    '<p class="muted">'+list.length+' match(es) · <button class="link-btn" data-action="clear-search">Clear search</button></p></div>' +
+    '<div class="tile-grid">' + (list.map(renderCardTile).join('') || '<p class="muted">No matches.</p>') + '</div>';
+}
+
+/* ============================================================
+   APP CONTROLLER
+   ============================================================ */
+class App{
+  constructor(){
+    this.store = new DataStore();
+    this.state = {
+      view: 'overview',
+      search: '',
+      filters: {department:'', status:'', owner:'', country:''},
+      openCardId: null,
+      newCardOpen: false,
+      meeting: false,
+      customTab: 'kz'
+    };
+    this.customDiagrams = {};
+    CUSTOM_DIAGRAM_TABS.forEach(t=>{
+      this.customDiagrams[t.id] = localStorage.getItem('decisionHub_customMermaid_'+t.id) || CUSTOM_DIAGRAM_DEFAULTS[t.id];
+    });
+    this._customMermaidDebounce = null;
+  }
+  getCustomMermaidSource(tab){ return this.customDiagrams[tab || this.state.customTab]; }
+  setCustomMermaidSource(src, tab){
+    tab = tab || this.state.customTab;
+    this.customDiagrams[tab] = src;
+    localStorage.setItem('decisionHub_customMermaid_'+tab, src);
+    if(tab === this.state.customTab){
+      const ta = document.getElementById('mermaid-custom-source');
+      if(ta) ta.value = src;
+      this.renderCustomMermaid();
+    }
+  }
+  currentUser(){ return localStorage.getItem('chd_username') || ''; }
+  viewToDept(view){
+    const map = {legal:'Legal', finance:'Finance', accounting:'Accounting', operations:'Operations', development:'Development', ceo:'CEO'};
+    return map[view] || null;
+  }
+  init(){
+    document.getElementById('app-root').innerHTML = renderShell();
+    this.store.subscribe(()=>this.renderAll());
+    this.bindEvents();
+    this.renderAll();
+  }
+  bindEvents(){
+    document.addEventListener('click', e=>this.handleClick(e));
+    document.addEventListener('dblclick', e=>this.handleDblClick(e));
+    document.addEventListener('change', e=>this.handleChange(e));
+    document.addEventListener('input', e=>this.handleInput(e));
+    document.addEventListener('submit', e=>this.handleSubmit(e));
+    document.addEventListener('keydown', e=>this.handleKeydown(e));
+    document.addEventListener('dragstart', e=>this.handleDragStart(e));
+    document.addEventListener('dragend', e=>this.handleDragEnd(e));
+    document.addEventListener('dragover', e=>this.handleDragOver(e));
+    document.addEventListener('dragleave', e=>this.handleDragLeave(e));
+    document.addEventListener('drop', e=>this.handleDrop(e));
+  }
+
+  setView(view){
+    this.state.view = view;
+    this.state.search = '';
+    const si = document.getElementById('search-input');
+    if(si) si.value = '';
+    this.renderSidebarActive();
+    this.renderMain();
+  }
+
+  renderAll(){
+    this.renderSidebarActive();
+    this.renderMain();
+    this.renderModal();
+  }
+  renderSidebarActive(){
+    document.querySelectorAll('.nav-item').forEach(el=>{
+      el.classList.toggle('active', el.dataset.view === this.state.view);
+    });
+  }
+  renderMain(){
+    const main = document.getElementById('main-content');
+    if(!main) return;
+    if(this.state.search && this.state.search.trim()){
+      main.innerHTML = renderSearchResults(this);
+      return;
+    }
+    switch(this.state.view){
+      case 'overview':    main.innerHTML = renderOverview(this); break;
+      case 'legal':       main.innerHTML = renderDepartment(this, 'Legal'); break;
+      case 'finance':     main.innerHTML = renderDepartment(this, 'Finance'); break;
+      case 'accounting':  main.innerHTML = renderDepartment(this, 'Accounting'); break;
+      case 'operations':  main.innerHTML = renderDepartment(this, 'Operations'); break;
+      case 'development': main.innerHTML = renderDevelopment(this); break;
+      case 'ceo':          main.innerHTML = renderCEODashboard(this); break;
+      case 'decisions':   main.innerHTML = renderKanban(this); break;
+      case 'graph':        main.innerHTML = renderGraph(this); this.drawGraphEdges(); break;
+      case 'scheme':        main.innerHTML = renderScheme(this); this.renderMermaidScheme(); this.renderCustomMermaid(); break;
+      default:              main.innerHTML = renderOverview(this);
+    }
+  }
+  renderModal(){
+    const root = document.getElementById('modal-root');
+    if(!root) return;
+    if(this.state.openCardId){
+      const card = this.store.getCard(this.state.openCardId);
+      if(!card){ this.state.openCardId = null; root.innerHTML = ''; return; }
+      root.innerHTML = renderCardModal(card, this);
+    } else if(this.state.newCardOpen){
+      root.innerHTML = renderNewCardModal(this);
+    } else {
+      root.innerHTML = '';
+    }
+  }
+
+  renderMermaidScheme(){
+    if(typeof mermaid === 'undefined') return;
+    const deptEl = document.getElementById('mermaid-dept');
+    const levelEl = document.getElementById('mermaid-levels');
+    const targets = [];
+    if(deptEl){ deptEl.removeAttribute('data-processed'); deptEl.textContent = buildDeptInteractionMermaid(this); targets.push(deptEl); }
+    if(levelEl){ levelEl.removeAttribute('data-processed'); levelEl.textContent = buildLevelMermaid(this); targets.push(levelEl); }
+    if(!targets.length) return;
+    try{
+      mermaid.run({nodes: targets}).catch(err=>console.error('Mermaid render error', err));
+    }catch(err){
+      console.error('Mermaid render error', err);
+    }
+  }
+
+  renderCustomMermaid(){
+    if(typeof mermaid === 'undefined') return;
+    const el = document.getElementById('mermaid-custom');
+    if(!el) return;
+    const errEl = document.getElementById('mermaid-custom-error');
+    el.removeAttribute('data-processed');
+    el.textContent = this.customDiagrams[this.state.customTab];
+    if(errEl) errEl.textContent = '';
+    mermaid.run({nodes:[el]}).catch(err=>{
+      console.error('Custom mermaid render error', err);
+      if(errEl) errEl.textContent = 'Diagram syntax error: ' + (err && err.message ? err.message : err);
+    });
+  }
+
+  drawGraphEdges(){
+    const wrap = document.getElementById('graph-wrap');
+    const svg = document.getElementById('graph-svg');
+    if(!wrap || !svg) return;
+    const wrapRect = wrap.getBoundingClientRect();
+    svg.setAttribute('width', wrap.scrollWidth);
+    svg.setAttribute('height', wrap.scrollHeight);
+    svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"></path></marker></defs>';
+    const cards = SearchEngine.run(this.store.cards, {filters: this.state.filters});
+    const idSet = new Set(cards.map(c=>c.id));
+    cards.forEach(card=>{
+      (card.dependencies||[]).forEach(depId=>{
+        if(!idSet.has(depId)) return;
+        const fromEl = document.getElementById('gnode-'+depId);
+        const toEl = document.getElementById('gnode-'+card.id);
+        if(!fromEl || !toEl) return;
+        const fr = fromEl.getBoundingClientRect(), tr = toEl.getBoundingClientRect();
+        const x1 = fr.right - wrapRect.left + wrap.scrollLeft;
+        const y1 = fr.top + fr.height/2 - wrapRect.top + wrap.scrollTop;
+        const x2 = tr.left - wrapRect.left + wrap.scrollLeft;
+        const y2 = tr.top + tr.height/2 - wrapRect.top + wrap.scrollTop;
+        const midX = (x1+x2)/2;
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', 'M'+x1+','+y1+' C'+midX+','+y1+' '+midX+','+y2+' '+x2+','+y2);
+        path.setAttribute('stroke', '#cbd5e1');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', 'url(#arrowhead)');
+        svg.appendChild(path);
+      });
+    });
+  }
+
+  editInline(el, currentValue, onCommit, multiline){
+    const input = document.createElement(multiline ? 'textarea' : 'input');
+    input.value = currentValue;
+    input.className = 'inline-edit-box';
+    if(multiline) input.rows = 3;
+    el.replaceWith(input);
+    input.focus();
+    input.select();
+    let committed = false;
+    const commit = () => { if(committed) return; committed = true; onCommit(input.value.trim()); };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', ev=>{
+      if(ev.key === 'Enter' && !multiline){ ev.preventDefault(); input.blur(); }
+      if(ev.key === 'Escape'){ committed = true; this.renderAll(); }
+    });
+  }
+
+  /* ---------- event handlers ---------- */
+  handleClick(e){
+    if(e.target.classList && e.target.classList.contains('modal-backdrop')){
+      this.state.openCardId = null;
+      this.state.newCardOpen = false;
+      this.renderModal();
+      return;
+    }
+    const menu = document.getElementById('export-menu');
+    if(menu && menu.classList.contains('open') && !e.target.closest('#export-menu-wrap')){
+      menu.classList.remove('open');
+    }
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    switch(action){
+      case 'nav':
+        this.setView(el.dataset.view);
+        document.getElementById('app').classList.remove('sidebar-open');
+        break;
+      case 'toggle-meeting':
+        document.body.classList.toggle('meeting-mode');
+        this.state.meeting = document.body.classList.contains('meeting-mode');
+        el.classList.toggle('active', this.state.meeting);
+        break;
+      case 'toggle-sidebar':
+        document.getElementById('app').classList.toggle('sidebar-open');
+        break;
+      case 'open-new-card':
+        this.state.newCardOpen = true;
+        this.state.openCardId = null;
+        this.renderModal();
+        break;
+      case 'open-card':
+        this.state.openCardId = el.dataset.card;
+        this.state.newCardOpen = false;
+        this.renderModal();
+        break;
+      case 'close-modal':
+        this.state.openCardId = null;
+        this.state.newCardOpen = false;
+        this.renderModal();
+        break;
+      case 'delete-card': {
+        const card = this.store.getCard(el.dataset.card);
+        if(card && confirm('Delete "' + card.title + '"? This cannot be undone.')){
+          this.state.openCardId = null;
+          this.store.deleteCard(el.dataset.card);
+        }
+        break;
+      }
+      case 'remove-dependency': {
+        const card = this.store.getCard(el.dataset.card);
+        card.dependencies = card.dependencies.filter(d=>d!==el.dataset.dep);
+        card.updatedAt = Date.now();
+        this.store.save();
+        break;
+      }
+      case 'remove-checklist-item': {
+        const card = this.store.getCard(el.dataset.card);
+        const group = card.checklists.find(g=>g.id===el.dataset.group);
+        group.items = group.items.filter(i=>i.id!==el.dataset.item);
+        card.updatedAt = Date.now();
+        this.store.save();
+        break;
+      }
+      case 'remove-checklist-group': {
+        const card = this.store.getCard(el.dataset.card);
+        card.checklists = card.checklists.filter(g=>g.id!==el.dataset.group);
+        card.updatedAt = Date.now();
+        this.store.save();
+        break;
+      }
+      case 'clear-filters':
+        this.state.filters = {department:'', status:'', owner:'', country:''};
+        this.renderMain();
+        break;
+      case 'clear-search':
+        this.state.search = '';
+        { const si = document.getElementById('search-input'); if(si) si.value = ''; }
+        this.renderMain();
+        break;
+      case 'export-json': ExportManager.toJSON(this.store.cards); break;
+      case 'export-md':   ExportManager.toMarkdown(this.store.cards); break;
+      case 'export-csv':  ExportManager.toCSV(this.store.cards); break;
+      case 'export-html': ExportManager.toHTML(this.store.cards); break;
+      case 'trigger-import': document.getElementById('import-file-input').click(); break;
+      case 'toggle-export-menu': document.getElementById('export-menu').classList.toggle('open'); break;
+      case 'custom-tab':
+        this.state.customTab = el.dataset.tab;
+        this.renderMain();
+        break;
+    }
+  }
+
+  handleDblClick(e){
+    const el = e.target.closest('[data-editable]');
+    if(!el) return;
+    const type = el.dataset.editable;
+    const cardId = el.dataset.card;
+    const card = this.store.getCard(cardId);
+    if(!card) return;
+    if(type === 'title'){
+      this.editInline(el, card.title, val=>{ this.store.updateCard(cardId, {title: val || card.title}); });
+    } else if(type === 'description'){
+      this.editInline(el, card.description || '', val=>{ this.store.updateCard(cardId, {description: val}); }, true);
+    } else if(type === 'owner'){
+      this.editInline(el, card.owner || '', val=>{ this.store.updateCard(cardId, {owner: val}); });
+    } else if(type === 'checklist-title'){
+      const group = card.checklists.find(g=>g.id===el.dataset.group);
+      this.editInline(el, group.title, val=>{ group.title = val || group.title; card.updatedAt = Date.now(); this.store.save(); });
+    } else if(type === 'checklist-item-label'){
+      const group = card.checklists.find(g=>g.id===el.dataset.group);
+      const item = group.items.find(i=>i.id===el.dataset.item);
+      this.editInline(el, item.label, val=>{ item.label = val || item.label; card.updatedAt = Date.now(); this.store.save(); });
+    }
+  }
+
+  handleChange(e){
+    if(e.target.id === 'import-file-input'){
+      const file = e.target.files[0];
+      if(!file) return;
+      if(!confirm('Import will replace ALL current data. Continue?')){ e.target.value=''; return; }
+      ExportManager.importJSON(file, cards=>{
+        cards.forEach(c=>{
+          c.comments = c.comments || [];
+          c.dependencies = c.dependencies || [];
+          c.checklists = c.checklists || [];
+          c.countries = c.countries || [];
+        });
+        this.store.replaceAll(cards);
+        e.target.value = '';
+      });
+      return;
+    }
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    if(action === 'field-change'){
+      this.store.updateCard(el.dataset.card, {[el.dataset.field]: el.value});
+    } else if(action === 'add-dependency'){
+      if(el.value){
+        const card = this.store.getCard(el.dataset.card);
+        card.dependencies.push(el.value);
+        card.updatedAt = Date.now();
+        this.store.save();
+      }
+    } else if(action === 'toggle-checklist-item'){
+      const card = this.store.getCard(el.dataset.card);
+      const group = card.checklists.find(g=>g.id===el.dataset.group);
+      const item = group.items.find(i=>i.id===el.dataset.item);
+      item.checked = el.checked;
+      if(group.title === 'Обязательность'){
+        card.countries = group.items.filter(i=>i.checked).map(i=>i.label);
+      }
+      card.updatedAt = Date.now();
+      this.store.save();
+    } else if(action === 'filter-change'){
+      this.state.filters[el.dataset.field] = el.value;
+      this.renderMain();
+    }
+  }
+
+  handleInput(e){
+    if(e.target.id === 'search-input'){
+      this.state.search = e.target.value;
+      this.renderMain();
+    } else if(e.target.id === 'mermaid-custom-source'){
+      const val = e.target.value;
+      const tab = this.state.customTab;
+      clearTimeout(this._customMermaidDebounce);
+      this._customMermaidDebounce = setTimeout(()=>{
+        this.customDiagrams[tab] = val;
+        localStorage.setItem('decisionHub_customMermaid_'+tab, val);
+        this.renderCustomMermaid();
+      }, 400);
+    }
+  }
+
+  handleSubmit(e){
+    const form = e.target.closest('[data-action]');
+    if(!form || form.tagName !== 'FORM') return;
+    e.preventDefault();
+    const action = form.dataset.action;
+    if(action === 'new-card-form'){
+      const fd = new FormData(form);
+      const title = (fd.get('title') || '').trim();
+      if(!title){ alert('Title is required'); return; }
+      const department = fd.get('department');
+      const card = {
+        id: uid('card'), title, description: (fd.get('description')||'').trim(),
+        department, status: fd.get('status'), priority: fd.get('priority'), owner: (fd.get('owner')||'').trim(),
+        comments: [], dependencies: [], countries: [],
+        checklists: department === 'Legal' ? SeedData.checklistTemplate() : [],
+        createdAt: Date.now(), updatedAt: Date.now()
       };
-      Object.values(map).forEach((el) => (el.innerHTML = ""));
-      SCREENS.forEach((s) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "tab" + (s.id === current ? " active" : "");
-        btn.textContent = s.label;
-        btn.addEventListener("click", () => show(s.id));
-        map[s.group].appendChild(btn);
-      });
+      this.state.newCardOpen = false;
+      this.state.openCardId = card.id;
+      this.store.addCard(card);
+    } else if(action === 'add-checklist-item-form'){
+      const cardId = form.dataset.card, groupId = form.dataset.group;
+      const input = form.querySelector('.inline-add-input');
+      const label = input.value.trim();
+      if(!label) return;
+      const card = this.store.getCard(cardId);
+      const group = card.checklists.find(g=>g.id===groupId);
+      group.items.push({id: uid('itm'), label, checked:false});
+      card.updatedAt = Date.now();
+      this.store.save();
+    } else if(action === 'add-checklist-group-form'){
+      const cardId = form.dataset.card;
+      const input = form.querySelector('.inline-add-input');
+      const title = input.value.trim();
+      if(!title) return;
+      const card = this.store.getCard(cardId);
+      card.checklists = card.checklists || [];
+      card.checklists.push({id: uid('chk'), title, items: []});
+      card.updatedAt = Date.now();
+      this.store.save();
+    } else if(action === 'add-comment-form'){
+      const cardId = form.dataset.card;
+      const author = form.querySelector('.comment-author-input').value.trim() || 'Anonymous';
+      const text = form.querySelector('.comment-text-input').value.trim();
+      if(!text) return;
+      localStorage.setItem('chd_username', author);
+      const card = this.store.getCard(cardId);
+      card.comments = card.comments || [];
+      card.comments.push({id: uid('cmt'), author, text, ts: Date.now()});
+      card.updatedAt = Date.now();
+      this.store.save();
     }
+  }
 
-    function show(id) {
-      current = id;
-      const meta = SCREENS.find((s) => s.id === id);
-      const tpl = document.getElementById("tpl-" + id);
-      const preview = document.getElementById("preview");
-      preview.innerHTML = "";
-      const node = tpl.content.cloneNode(true);
-      preview.appendChild(node);
-      fillProgress(preview);
-
-      document.getElementById("side-title").textContent = meta.label;
-      document.getElementById("side-id").textContent = "Step " + meta.step + " · id=" + meta.id;
-      const notes = document.getElementById("side-notes");
-      notes.innerHTML = "";
-      meta.notes.forEach((n) => {
-        const li = document.createElement("li");
-        li.textContent = n;
-        notes.appendChild(li);
-      });
-
-      const idx = SCREENS.findIndex((s) => s.id === id);
-      document.getElementById("btn-prev").disabled = idx === 0;
-      document.getElementById("btn-next").disabled = idx === SCREENS.length - 1;
-      renderTabs();
+  handleKeydown(e){
+    if(e.key === 'Escape' && (this.state.openCardId || this.state.newCardOpen)){
+      this.state.openCardId = null;
+      this.state.newCardOpen = false;
+      this.renderModal();
     }
+  }
 
-    document.getElementById("btn-prev").addEventListener("click", () => {
-      const i = SCREENS.findIndex((s) => s.id === current);
-      if (i > 0) show(SCREENS[i - 1].id);
-    });
-    document.getElementById("btn-next").addEventListener("click", () => {
-      const i = SCREENS.findIndex((s) => s.id === current);
-      if (i < SCREENS.length - 1) show(SCREENS[i + 1].id);
-    });
+  handleDragStart(e){
+    const tile = e.target.closest('.card-tile');
+    if(!tile) return;
+    e.dataTransfer.setData('text/plain', tile.dataset.card);
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(()=>tile.classList.add('dragging'), 0);
+  }
+  handleDragEnd(e){
+    const tile = e.target.closest('.card-tile');
+    if(tile) tile.classList.remove('dragging');
+    document.querySelectorAll('.kanban-col-body.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  }
+  handleDragOver(e){
+    const zone = e.target.closest('[data-dropzone]');
+    if(!zone) return;
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  }
+  handleDragLeave(e){
+    const zone = e.target.closest('[data-dropzone]');
+    if(zone) zone.classList.remove('drag-over');
+  }
+  handleDrop(e){
+    const zone = e.target.closest('[data-dropzone]');
+    if(!zone) return;
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const cardId = e.dataTransfer.getData('text/plain');
+    if(cardId) this.store.updateCard(cardId, {status: zone.dataset.status});
+  }
+}
 
-    show(current);
-  </script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  window.app = new App();
+  window.app.init();
+});
+</script>
 </body>
 </html>
