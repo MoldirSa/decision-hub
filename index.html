@@ -346,6 +346,54 @@ a{ color:inherit; }
 .new-card-modal .modal-fields{ grid-template-columns:repeat(2,1fr); }
 
 /* ============================================================
+   SESSION / HYPOTHESES
+   ============================================================ */
+.user-chip{
+  display:flex; align-items:center; gap:8px;
+  padding:4px 10px 4px 6px; border:1px solid var(--border-strong);
+  border-radius:999px; background:#fff; font-size:12.5px; cursor:pointer;
+  max-width:240px;
+}
+.user-chip:hover{ background:#f4f4f5; }
+.user-chip-name{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-chip-dept{ color:var(--text-muted); font-size:11.5px; white-space:nowrap; }
+.hyp-toolbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.hyp-toolbar .filter-bar{ margin:0; flex:1; }
+.hyp-table-wrap{ overflow-x:auto; }
+.hyp-table{ width:100%; border-collapse:collapse; font-size:13px; }
+.hyp-table th{
+  text-align:left; font-size:11.5px; font-weight:650; text-transform:uppercase;
+  letter-spacing:.03em; color:var(--text-muted); padding:8px 10px;
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.hyp-table td{ padding:10px; border-bottom:1px solid #f1f1f2; vertical-align:top; }
+.hyp-table tr[data-action]:hover{ background:#fafafa; }
+.hyp-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.timeline{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; }
+.timeline-item{ font-size:12.5px; padding:8px 10px; background:#f7f7f8; border-radius:var(--radius-sm); }
+.auth-panel{ max-width:420px; }
+.auth-hint{ font-size:12.5px; color:var(--text-muted); margin-top:4px; }
+.dash-dept-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+.dash-dept-card{
+  background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:14px 16px; cursor:pointer; text-align:left; width:100%;
+}
+.dash-dept-card:hover{ box-shadow:var(--shadow-md); border-color:var(--border-strong); }
+.dash-dept-card h3{ font-size:13.5px; font-weight:650; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.dash-dept-metric{ display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0; color:var(--text-muted); }
+.dash-dept-metric b{ color:var(--text); }
+.queue-item{
+  display:flex; align-items:flex-start; gap:10px; padding:10px 8px;
+  border-bottom:1px solid #f1f1f2; cursor:pointer; border-radius:var(--radius-sm);
+}
+.queue-item:hover{ background:#f6f6f7; }
+.queue-item:last-child{ border-bottom:none; }
+.queue-title{ font-weight:600; font-size:13.5px; }
+@media (max-width:1024px){
+  .dash-dept-grid{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* ============================================================
    MEETING MODE
    ============================================================ */
 body.meeting-mode .secondary-ui{ display:none !important; }
@@ -426,8 +474,26 @@ const PRIORITY_COLORS = {
   Low:    {bg:'#e5e7eb', fg:'#374151'},
 };
 
+const ORG_UNITS = [
+  {id:'marketing',    label:'Маркетинг',       hint:'', color:'#db2777'},
+  {id:'sales',        label:'Отдел продаж',    hint:'', color:'#2563eb'},
+  {id:'accounting',   label:'Аккаунтинг',      hint:'текущие клиенты', color:'#0d9488'},
+  {id:'development',  label:'Разработка',      hint:'', color:'#475569'},
+  {id:'product',      label:'Product',         hint:'рассмотрение, спринт, отчётность', color:'#7c3aed'},
+];
+const HYPOTHESIS_STATUSES = [
+  {id:'submitted', label:'Направлена',     dot:'#64748b', bg:'#f1f5f9', fg:'#334155'},
+  {id:'review',    label:'На рассмотрении', dot:'#d97706', bg:'#fef3c7', fg:'#92400e'},
+  {id:'approved',  label:'Принята',        dot:'#2563eb', bg:'#dbeafe', fg:'#1e40af'},
+  {id:'sprint',    label:'В спринте',      dot:'#7c3aed', bg:'#ede9fe', fg:'#5b21b6'},
+  {id:'done',      label:'Реализована',    dot:'#16a34a', bg:'#dcfce7', fg:'#166534'},
+  {id:'rejected',  label:'Отклонена',      dot:'#dc2626', bg:'#fee2e2', fg:'#991b1b'},
+];
+const SESSION_KEY = 'decisionHub_session_v1';
+
 const NAV_ITEMS = [
   {id:'overview',    label:'Overview',          icon:'⌂'},
+  {id:'hypotheses',  label:'Гипотезы',          icon:'◇'},
   {id:'legal',       label:'Legal',             icon:'⚖'},
   {id:'finance',     label:'Finance',           icon:'$'},
   {id:'accounting',  label:'Accounting',        icon:'#'},
@@ -735,6 +801,21 @@ function esc(str){
   return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function deptColor(id){ const d = DEPARTMENTS.find(x=>x.id===id); return d ? d.color : '#666'; }
+function orgById(id){ return ORG_UNITS.find(x=>x.id===id); }
+function orgLabel(id){ const o = orgById(id); return o ? o.label : (id || '—'); }
+function orgColor(id){ const o = orgById(id); return o ? o.color : '#666'; }
+function hypStatus(id){ return HYPOTHESIS_STATUSES.find(s=>s.id===id) || HYPOTHESIS_STATUSES[0]; }
+function hypBadge(statusId){
+  const s = hypStatus(statusId);
+  return '<span class="badge" style="background:'+s.bg+';color:'+s.fg+'">'+esc(s.label)+'</span>';
+}
+function loadSession(){
+  try{ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ return null; }
+}
+function saveSession(session){
+  if(session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  else localStorage.removeItem(SESSION_KEY);
+}
 function formatDate(ts){
   if(!ts) return '—';
   const d = new Date(ts);
@@ -749,6 +830,7 @@ class DataStore{
     this.key = 'decisionHub_v1';
     this.listeners = [];
     this.cards = [];
+    this.hypotheses = [];
     this.load();
   }
   load(){
@@ -757,18 +839,25 @@ class DataStore{
       try{
         const parsed = JSON.parse(raw);
         this.cards = parsed.cards || [];
+        this.hypotheses = Array.isArray(parsed.hypotheses) ? parsed.hypotheses : [];
         if(!Array.isArray(this.cards) || !this.cards.length) throw new Error('empty');
+        if(!this.hypotheses.length){
+          this.hypotheses = SeedData.buildHypotheses();
+          this.save();
+        }
       }catch(e){
         this.cards = SeedData.build();
+        if(!this.hypotheses || !this.hypotheses.length) this.hypotheses = SeedData.buildHypotheses();
         this.save();
       }
     } else {
       this.cards = SeedData.build();
+      this.hypotheses = SeedData.buildHypotheses();
       this.save();
     }
   }
   save(){
-    localStorage.setItem(this.key, JSON.stringify({cards:this.cards, savedAt:Date.now()}));
+    localStorage.setItem(this.key, JSON.stringify({cards:this.cards, hypotheses:this.hypotheses, savedAt:Date.now()}));
     this.notify();
   }
   subscribe(fn){ this.listeners.push(fn); }
@@ -788,6 +877,19 @@ class DataStore{
     this.save();
   }
   replaceAll(cards){ this.cards = cards; this.save(); }
+  getHypothesis(id){ return this.hypotheses.find(h=>h.id===id); }
+  addHypothesis(h){ this.hypotheses.push(h); this.save(); }
+  updateHypothesis(id, patch){
+    const h = this.getHypothesis(id);
+    if(!h) return;
+    Object.assign(h, patch);
+    h.updatedAt = Date.now();
+    this.save();
+  }
+  deleteHypothesis(id){
+    this.hypotheses = this.hypotheses.filter(h=>h.id!==id);
+    this.save();
+  }
 }
 
 /* ============================================================
@@ -1014,6 +1116,37 @@ class SeedData{
     cards.push(SeedData.simpleCard('d1','Payment Gateway Provider Selection','Выбрать основного платёжного провайдера/шлюз для транзакционной модели.','Development','Daniyar (Dev Lead)','Discussion','High',['f1']));
 
     return cards;
+  }
+  static hyp(id, title, description, department, author, status, extra){
+    extra = extra || {};
+    const h = {
+      id, title, description, department, author, status,
+      expectedOutcome: extra.expectedOutcome || '',
+      sprint: extra.sprint || '',
+      report: extra.report || '',
+      rejectReason: extra.rejectReason || '',
+      history: extra.history || [],
+      createdAt: Date.now() - (extra.ago || 0),
+      updatedAt: Date.now() - (extra.ago || 0)
+    };
+    pushHypHistory(h, author + ' (' + orgLabel(department) + ')', 'Направлена на реализацию', '');
+    return h;
+  }
+  static buildHypotheses(){
+    const day = 86400000;
+    const items = [
+      SeedData.hyp('hyp-m1','Промо-лендинг биометрии для Казахстана','Гипотеза: отдельный лендинг с кейсами 1:1 повысит конверсию регистрации из рекламы.','marketing','Айгерим', 'submitted', {expectedOutcome:'+15% конверсия из ads', ago: 2*day}),
+      SeedData.hyp('hyp-s1','Поле «биометрия» в карточке лида','Продажам нужно видеть в CRM, подключён ли клиент к 1:N, чтобы не обещать недоступный функционал.','sales','Нурлан', 'review', {expectedOutcome:'меньше срывов на демо', ago: 5*day}),
+      SeedData.hyp('hyp-a1','Автосчёт для текущих клиентов','Аккаунтинг: ежемесячный счёт текущим клиентам без ручной выгрузки.','accounting','Сауле', 'sprint', {expectedOutcome:'−8 часов ручной работы / месяц', sprint:'Sprint 14', ago: 9*day}),
+      SeedData.hyp('hyp-d1','Дашборд лимитов API для клиента','Разработка: клиент видит расход кредитов и лимиты в кабинете.','development','Данияр', 'done', {expectedOutcome:'меньше тикетов «куда делись кредиты»', sprint:'Sprint 13', report:'Выпущено в Sprint 13. Тикеты по балансу −40% за первую неделю.', ago: 18*day}),
+      SeedData.hyp('hyp-m2','Реферальная программа для B2B','Маркетинг предлагает бонус за приведённого клиента.','marketing','Айгерим', 'rejected', {expectedOutcome:'снижение CAC', rejectReason:'Нет юр. модели бонуса до Q4', ago: 12*day})
+    ];
+    const productActor = 'Product';
+    pushHypHistory(items[1], productActor, 'Статус: На рассмотрении', '');
+    pushHypHistory(items[2], productActor, 'Добавлена в спринт', 'Sprint 14');
+    pushHypHistory(items[3], productActor, 'Статус: Реализована', 'Sprint 13');
+    pushHypHistory(items[4], productActor, 'Отклонена', 'Нет юр. модели бонуса до Q4');
+    return items;
   }
 }
 
@@ -1248,8 +1381,9 @@ function renderShell(){
     '<div class="main-col">' +
       '<header class="topbar">' +
         '<button class="icon-btn mobile-only" data-action="toggle-sidebar">☰</button>' +
-        '<div class="search-wrap"><input type="text" id="search-input" placeholder="Search decisions, comments, owners, departments…"></div>' +
+        '<div class="search-wrap"><input type="text" id="search-input" placeholder="Search decisions, hypotheses, owners…"></div>' +
         '<div class="topbar-actions">' +
+          '<div id="session-slot"></div>' +
           '<button class="btn-secondary" data-action="toggle-meeting">Meeting Mode</button>' +
           '<div class="export-wrap" id="export-menu-wrap">' +
             '<button class="btn-secondary" data-action="toggle-export-menu">Export ▾</button>' +
@@ -1650,6 +1784,323 @@ function renderScheme(app){
     '</div>';
 }
 
+function orgSelectOptions(selected, includeProduct){
+  const units = includeProduct === false ? ORG_UNITS.filter(o=>o.id!=='product') : ORG_UNITS;
+  const depts = units.filter(o=>o.id!=='product');
+  const product = units.find(o=>o.id==='product');
+  let html = '<optgroup label="Отдел">';
+  depts.forEach(o=>{
+    html += '<option value="'+o.id+'" '+(o.id===selected?'selected':'')+'>'+esc(o.label)+(o.hint?' — '+esc(o.hint):'')+'</option>';
+  });
+  html += '</optgroup>';
+  if(product){
+    html += '<optgroup label="Роль"><option value="product" '+(selected==='product'?'selected':'')+'>Product — рассмотрение и спринт</option></optgroup>';
+  }
+  return html;
+}
+
+function renderSessionSlot(app){
+  const slot = document.getElementById('session-slot');
+  if(!slot) return;
+  if(app.isRegistered()){
+    slot.innerHTML = '<button class="user-chip" data-action="open-auth" title="Сменить отдел или пользователя">' +
+      '<span class="dept-dot" style="background:'+orgColor(app.session.department)+'"></span>' +
+      '<span><span class="user-chip-name">'+esc(app.session.name)+'</span>' +
+      '<div class="user-chip-dept">'+esc(orgLabel(app.session.department))+'</div></span>' +
+      '</button>';
+  } else {
+    slot.innerHTML = '<button class="btn-secondary" data-action="open-auth">Регистрация</button>';
+  }
+}
+
+function pushHypHistory(h, actor, action, note){
+  h.history = h.history || [];
+  h.history.push({ts: Date.now(), actor: actor || '—', action, note: note || ''});
+}
+
+function renderHypTile(h, app){
+  const canDrag = app.isProduct();
+  return '<div class="card-tile hyp-tile" data-action="open-hypothesis" data-hyp="'+h.id+'" draggable="'+(canDrag?'true':'false')+'">' +
+    '<div class="tile-top">' + hypBadge(h.status) +
+      (h.sprint ? '<span class="tag mini">'+esc(h.sprint)+'</span>' : '') +
+    '</div>' +
+    '<h3>'+esc(h.title)+'</h3>' +
+    '<div class="tile-desc">'+(h.description ? esc(h.description) : '')+'</div>' +
+    '<div class="tile-meta">' +
+      '<span class="dept-dot" style="background:'+orgColor(h.department)+'"></span>'+esc(orgLabel(h.department)) +
+      '<span style="margin:0 6px">·</span>'+esc(h.author||'—') +
+    '</div>' +
+  '</div>';
+}
+
+function filteredHypotheses(app){
+  const f = app.state.hypFilters;
+  return app.store.hypotheses.filter(h=>{
+    if(f.department && h.department !== f.department) return false;
+    if(f.status && h.status !== f.status) return false;
+    if(f.sprint && (h.sprint||'') !== f.sprint) return false;
+    if(app.state.search && app.state.view === 'hypotheses'){
+      const q = app.state.search.toLowerCase();
+      const blob = [h.title, h.description, h.author, h.sprint, h.report, orgLabel(h.department)].join(' ').toLowerCase();
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  }).slice().sort((a,b)=>b.updatedAt - a.updatedAt);
+}
+
+function renderHypotheses(app){
+  const all = app.store.hypotheses;
+  const list = filteredHypotheses(app);
+  const sprints = [...new Set(all.map(h=>h.sprint).filter(Boolean))].sort();
+  const f = app.state.hypFilters;
+  const counts = {
+    submitted: all.filter(h=>h.status==='submitted').length,
+    review: all.filter(h=>h.status==='review').length,
+    sprint: all.filter(h=>h.status==='sprint').length,
+    done: all.filter(h=>h.status==='done').length
+  };
+  const header = '<div class="view-header"><h1>Гипотезы</h1>' +
+    '<p class="muted">Дашборды отделов и Product: идеи → рассмотрение → спринт → отчёт.</p></div>';
+
+  const canSubmit = app.isRegistered() && !app.isProduct();
+  const toolbar = '<div class="hyp-toolbar">' +
+    '<div class="tab-bar">' +
+      '<button class="btn-mini'+(app.state.hypTab==='dashboard'?' active':'')+'" data-action="hyp-tab" data-tab="dashboard">Дашборд</button>' +
+      '<button class="btn-mini'+(app.state.hypTab==='board'?' active':'')+'" data-action="hyp-tab" data-tab="board">Доска</button>' +
+      '<button class="btn-mini'+(app.state.hypTab==='report'?' active':'')+'" data-action="hyp-tab" data-tab="report">Отчётность</button>' +
+    '</div>' +
+    '<div class="filter-bar secondary-ui">' +
+      '<select data-action="hyp-filter" data-field="department"><option value="">Все отделы</option>' +
+        ORG_UNITS.filter(o=>o.id!=='product').map(o=>'<option value="'+o.id+'" '+(f.department===o.id?'selected':'')+'>'+esc(o.label)+'</option>').join('') +
+      '</select>' +
+      '<select data-action="hyp-filter" data-field="status"><option value="">Все статусы</option>' +
+        HYPOTHESIS_STATUSES.map(s=>'<option value="'+s.id+'" '+(f.status===s.id?'selected':'')+'>'+esc(s.label)+'</option>').join('') +
+      '</select>' +
+      '<select data-action="hyp-filter" data-field="sprint"><option value="">Все спринты</option>' +
+        sprints.map(s=>'<option value="'+esc(s)+'" '+(f.sprint===s?'selected':'')+'>'+esc(s)+'</option>').join('') +
+      '</select>' +
+    '</div>' +
+    (canSubmit ? '<button class="btn-primary" data-action="open-new-hyp">+ Идея</button>' :
+      (app.isProduct() ? '<span class="muted">Product: рассматривайте очередь и перетаскивайте карточки на доске</span>' :
+        '<button class="btn-secondary" data-action="open-auth">Регистрация по отделу</button>')) +
+  '</div>';
+
+  const stats = '<div class="stat-grid">' +
+    statTile('Направлены', counts.submitted, 'discussion') +
+    statTile('На рассмотрении', counts.review) +
+    statTile('В спринте', counts.sprint) +
+    statTile('Реализованы', counts.done, 'approved') +
+  '</div>';
+
+  if(app.state.hypTab === 'report') return header + toolbar + stats + renderHypReport(list);
+  if(app.state.hypTab === 'board'){
+    const board = '<div class="kanban-board">' +
+      HYPOTHESIS_STATUSES.map(st=>{
+        const items = list.filter(h=>h.status===st.id);
+        return '<div class="kanban-col">' +
+          '<div class="kanban-col-head"><span class="dot" style="background:'+st.dot+'"></span><h3>'+esc(st.label)+'</h3><span class="count">'+items.length+'</span></div>' +
+          '<div class="kanban-col-body" data-hyp-dropzone data-hyp-status="'+st.id+'">' +
+            (items.map(h=>renderHypTile(h, app)).join('') || '') +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+    const empty = all.length ? '' : '<p class="muted" style="margin-top:8px">Пока нет гипотез.</p>';
+    return header + toolbar + stats + board + empty;
+  }
+  return header + toolbar + stats + renderHypDashboard(app, list, all);
+}
+
+function renderHypDashboard(app, list, all){
+  const depts = ORG_UNITS.filter(o=>o.id!=='product');
+  const deptCards = '<div class="dash-dept-grid">' + depts.map(d=>{
+    const items = all.filter(h=>h.department===d.id);
+    const submitted = items.filter(h=>h.status==='submitted' || h.status==='review').length;
+    const sprint = items.filter(h=>h.status==='sprint').length;
+    const done = items.filter(h=>h.status==='done').length;
+    const mine = app.isRegistered() && app.session.department===d.id;
+    return '<button class="dash-dept-card" data-action="hyp-focus-dept" data-dept="'+d.id+'" style="'+(mine?'border-color:'+d.color+';box-shadow:0 0 0 1px '+d.color+'22':'')+'">' +
+      '<h3><span class="dept-dot" style="background:'+d.color+'"></span>'+esc(d.label)+(d.hint?' <span class="muted">· '+esc(d.hint)+'</span>':'')+(mine?' <span class="badge">мой отдел</span>':'')+'</h3>' +
+      '<div class="dash-dept-metric"><span>Всего идей</span><b>'+items.length+'</b></div>' +
+      '<div class="dash-dept-metric"><span>Очередь Product</span><b>'+submitted+'</b></div>' +
+      '<div class="dash-dept-metric"><span>В спринте</span><b>'+sprint+'</b></div>' +
+      '<div class="dash-dept-metric"><span>Реализовано</span><b>'+done+'</b></div>' +
+    '</button>';
+  }).join('') + '</div>';
+
+  const queue = all.filter(h=>h.status==='submitted' || h.status==='review').sort((a,b)=>a.createdAt-b.createdAt);
+  const sprintItems = all.filter(h=>h.status==='sprint');
+  const doneItems = all.filter(h=>h.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,5);
+  const myDept = app.isRegistered() && app.session.department !== 'product' ? app.session.department : null;
+  const mine = myDept ? all.filter(h=>h.department===myDept) : [];
+
+  const queuePanel = '<div class="panel"><h2>'+(app.isProduct()?'Очередь на рассмотрение':'Очередь Product')+' ('+queue.length+')</h2>' +
+    (queue.length ? queue.map(h=>
+      '<div class="queue-item" data-action="open-hypothesis" data-hyp="'+h.id+'">' +
+        '<span class="dept-dot" style="background:'+orgColor(h.department)+';margin-top:6px;"></span>' +
+        '<div style="flex:1">' +
+          '<div class="queue-title">'+esc(h.title)+'</div>' +
+          '<div class="muted">'+esc(orgLabel(h.department))+' · '+esc(h.author)+' · '+hypStatus(h.status).label+'</div>' +
+        '</div>'+hypBadge(h.status) +
+      '</div>'
+    ).join('') : '<p class="muted">Пусто — новых идей нет.</p>') +
+  '</div>';
+
+  const sprintPanel = '<div class="panel"><h2>Текущий спринт ('+sprintItems.length+')</h2>' +
+    (sprintItems.length ? sprintItems.map(h=>
+      '<div class="queue-item" data-action="open-hypothesis" data-hyp="'+h.id+'">' +
+        '<span class="dept-dot" style="background:'+orgColor(h.department)+';margin-top:6px;"></span>' +
+        '<div style="flex:1"><div class="queue-title">'+esc(h.title)+'</div>' +
+        '<div class="muted">'+esc(h.sprint||'без названия')+' · '+esc(orgLabel(h.department))+'</div></div>' +
+      '</div>'
+    ).join('') : '<p class="muted">Product ещё не поставил идеи в спринт.</p>') +
+  '</div>';
+
+  const donePanel = '<div class="panel"><h2>Отчёт по реализации</h2>' +
+    (doneItems.length ? doneItems.map(h=>
+      '<div class="queue-item" data-action="open-hypothesis" data-hyp="'+h.id+'">' +
+        '<span class="dept-dot" style="background:'+orgColor(h.department)+';margin-top:6px;"></span>' +
+        '<div style="flex:1"><div class="queue-title">'+esc(h.title)+'</div>' +
+        '<div class="muted">'+(h.report ? esc(h.report) : 'Отчёт не заполнен')+'</div></div>' +
+      '</div>'
+    ).join('') : '<p class="muted">Реализованных гипотез пока нет.</p>') +
+  '</div>';
+
+  let myPanel = '';
+  if(myDept){
+    myPanel = '<div class="panel"><h2>Дашборд отдела: '+esc(orgLabel(myDept))+'</h2>' +
+      (mine.length ? '<div class="tile-grid">'+mine.map(h=>renderHypTile(h, app)).join('')+'</div>' :
+        '<p class="muted">У отдела пока нет идей. Нажмите «+ Идея».</p>') +
+    '</div>';
+  } else if(app.isProduct()){
+    myPanel = '<div class="panel"><h2>Дашборд Product</h2><p class="muted">Берите идеи из очереди, ставьте в спринт на доске, фиксируйте результат в отчётности.</p></div>';
+  }
+
+  return '<h2 style="font-size:15px;font-weight:650;margin:0 0 12px;">Дашборды отделов</h2>' + deptCards +
+    myPanel +
+    '<div class="panel-grid">' + queuePanel + sprintPanel + '</div>' +
+    donePanel;
+}
+
+function renderHypReport(list){
+  if(!list.length) return '<div class="panel"><p class="muted">Нет гипотез по текущим фильтрам.</p></div>';
+  return '<div class="panel"><h2>Отчёт по гипотезам</h2>' +
+    '<div class="hyp-table-wrap"><table class="hyp-table">' +
+      '<thead><tr><th>Идея</th><th>Отдел</th><th>Статус</th><th>Спринт</th><th>Автор</th><th>Обновлено</th><th>Результат</th></tr></thead>' +
+      '<tbody>' + list.map(h=>
+        '<tr data-action="open-hypothesis" data-hyp="'+h.id+'">' +
+          '<td><b>'+esc(h.title)+'</b></td>' +
+          '<td><span class="dept-dot" style="background:'+orgColor(h.department)+'"></span>'+esc(orgLabel(h.department))+'</td>' +
+          '<td>'+hypBadge(h.status)+'</td>' +
+          '<td>'+esc(h.sprint||'—')+'</td>' +
+          '<td>'+esc(h.author||'—')+'</td>' +
+          '<td class="muted">'+formatDate(h.updatedAt)+'</td>' +
+          '<td>'+esc(h.report||h.result||'—')+'</td>' +
+        '</tr>'
+      ).join('') +
+      '</tbody></table></div></div>';
+}
+
+function renderAuthForm(app){
+  const s = app.session || {};
+  return '<form data-action="auth-form">' +
+    '<div class="field"><label>Имя</label><input type="text" name="name" required placeholder="Как к вам обращаться" value="'+esc(s.name||'')+'"></div>' +
+    '<div class="field"><label>Отдел / роль</label>' +
+      '<select name="department" required>' + orgSelectOptions(s.department || 'marketing') + '</select>' +
+      '<p class="auth-hint">Маркетинг, продажи, аккаунтинг и разработка направляют идеи. Product рассматривает и ставит в спринт.</p>' +
+    '</div>' +
+    '<div class="modal-footer" style="border:none;padding-top:0;margin-top:8px;">' +
+      (app.isRegistered() ? '<button type="button" class="btn-danger" data-action="logout">Выйти</button>' : '<span></span>') +
+      '<button type="submit" class="btn-primary">Сохранить</button>' +
+    '</div>' +
+  '</form>';
+}
+
+function renderAuthModal(app){
+  return '<div class="modal-backdrop" data-action="close-modal">' +
+    '<div class="modal new-card-modal">' +
+      '<div class="modal-header"><h2 style="cursor:default;">Регистрация по отделу</h2><button class="icon-btn" data-action="close-modal">×</button></div>' +
+      renderAuthForm(app) +
+    '</div></div>';
+}
+
+function renderNewHypModal(app){
+  const dept = app.session && app.session.department !== 'product' ? app.session.department : 'marketing';
+  const locked = app.session && app.session.department !== 'product';
+  return '<div class="modal-backdrop" data-action="close-modal">' +
+    '<div class="modal new-card-modal">' +
+      '<div class="modal-header"><h2 style="cursor:default;">Новая гипотеза</h2><button class="icon-btn" data-action="close-modal">×</button></div>' +
+      '<form data-action="new-hyp-form">' +
+        '<div class="field"><label>Идея</label><input type="text" name="title" required placeholder="Что предлагаем реализовать"></div>' +
+        '<div class="field"><label>Описание</label><textarea name="description" rows="4" placeholder="Контекст, проблема, ожидаемый эффект"></textarea></div>' +
+        '<div class="field"><label>Ожидаемый результат</label><input type="text" name="expectedOutcome" placeholder="Например: рост конверсии регистрации"></div>' +
+        '<div class="field"><label>Отдел</label>' +
+          (locked
+            ? '<input type="text" value="'+esc(orgLabel(dept))+'" disabled><input type="hidden" name="department" value="'+esc(dept)+'">'
+            : '<select name="department">'+orgSelectOptions(dept, false)+'</select>') +
+        '</div>' +
+        '<div class="modal-footer"><span></span><button type="submit" class="btn-primary">Направить Product</button></div>' +
+      '</form>' +
+    '</div></div>';
+}
+
+function renderHypModal(h, app){
+  const product = app.isProduct();
+  const owner = app.isRegistered() && app.session.department === h.department && app.session.department !== 'product';
+  const history = (h.history||[]).slice().reverse();
+  let actions = '';
+  if(product){
+    if(h.status === 'submitted') actions += '<button class="btn-secondary" data-action="hyp-set-status" data-hyp="'+h.id+'" data-status="review">Взять на рассмотрение</button>';
+    if(h.status === 'review' || h.status === 'submitted'){
+      actions += '<button class="btn-primary" data-action="hyp-set-status" data-hyp="'+h.id+'" data-status="approved">Принять</button>';
+      actions += '<button class="btn-danger" data-action="hyp-reject" data-hyp="'+h.id+'">Отклонить</button>';
+    }
+    if(h.status === 'approved' || h.status === 'review'){
+      actions += '<button class="btn-primary" data-action="hyp-to-sprint" data-hyp="'+h.id+'">Добавить в спринт</button>';
+    }
+    if(h.status === 'sprint'){
+      actions += '<button class="btn-primary" data-action="hyp-set-status" data-hyp="'+h.id+'" data-status="done">Отметить реализованной</button>';
+    }
+  }
+  return '<div class="modal-backdrop" data-action="close-modal">' +
+    '<div class="modal">' +
+      '<div class="modal-header">' +
+        '<div class="modal-header-main"><h2 style="cursor:default;">'+esc(h.title)+'</h2></div>' +
+        '<button class="icon-btn" data-action="close-modal">×</button>' +
+      '</div>' +
+      '<div class="modal-meta">'+hypBadge(h.status) +
+        (h.sprint ? ' <span class="tag mini">'+esc(h.sprint)+'</span>' : '') +
+      '</div>' +
+      '<div class="modal-fields" style="grid-template-columns:repeat(2,1fr);">' +
+        '<div class="field"><label>Отдел</label><div>' +
+          '<span class="dept-dot" style="background:'+orgColor(h.department)+'"></span>'+esc(orgLabel(h.department)) +
+        '</div></div>' +
+        '<div class="field"><label>Автор</label><div>'+esc(h.author||'—')+'</div></div>' +
+      '</div>' +
+      '<div class="field"><label>Описание</label><div>'+(h.description ? esc(h.description).replace(/\n/g,'<br>') : '<span class="muted">—</span>')+'</div></div>' +
+      '<div class="field"><label>Ожидаемый результат</label><div>'+(h.expectedOutcome ? esc(h.expectedOutcome) : '<span class="muted">—</span>')+'</div></div>' +
+      (h.rejectReason ? '<div class="field"><label>Причина отклонения</label><div>'+esc(h.rejectReason)+'</div></div>' : '') +
+      (product ? (
+        '<form data-action="hyp-report-form" data-hyp="'+h.id+'">' +
+          '<div class="field"><label>Спринт</label><input type="text" name="sprint" value="'+esc(h.sprint||'')+'" placeholder="Например: Sprint 14"></div>' +
+          '<div class="field"><label>Отчёт Product</label><textarea name="report" rows="3" placeholder="Статус реализации, метрики, вывод">'+esc(h.report||'')+'</textarea></div>' +
+          '<button type="submit" class="btn-secondary">Сохранить отчёт</button>' +
+        '</form>'
+      ) : (h.report ? '<div class="field"><label>Отчёт Product</label><div>'+esc(h.report)+'</div></div>' : '')) +
+      (actions ? '<div class="field"><label>Действия Product</label><div class="hyp-actions">'+actions+'</div></div>' : '') +
+      '<div class="field"><label>История</label><div class="timeline">' +
+        (history.length ? history.map(ev=>
+          '<div class="timeline-item"><b>'+esc(ev.action)+'</b> · '+esc(ev.actor)+
+          '<div class="muted">'+formatDate(ev.ts)+(ev.note ? ' · '+esc(ev.note) : '')+'</div></div>'
+        ).join('') : '<p class="muted">Пока нет событий.</p>') +
+      '</div></div>' +
+      '<div class="modal-footer">' +
+        ((product || owner) ? '<button class="btn-danger" data-action="delete-hyp" data-hyp="'+h.id+'">Удалить</button>' : '<span></span>') +
+        '<span class="muted secondary-ui">Сохраняется в этом браузере</span>' +
+      '</div>' +
+    '</div></div>';
+}
+
 function renderSearchResults(app){
   const list = SearchEngine.run(app.store.cards, {search: app.state.search, filters: app.state.filters});
   return '<div class="view-header"><h1>Search results for "'+esc(app.state.search)+'"</h1>' +
@@ -1663,12 +2114,18 @@ function renderSearchResults(app){
 class App{
   constructor(){
     this.store = new DataStore();
+    this.session = loadSession();
     this.state = {
-      view: 'overview',
+      view: 'hypotheses',
       search: '',
       filters: {department:'', status:'', owner:'', country:''},
+      hypFilters: {department:'', status:'', sprint:''},
+      hypTab: 'dashboard',
       openCardId: null,
       newCardOpen: false,
+      openHypId: null,
+      newHypOpen: false,
+      authOpen: false,
       meeting: false,
       customTab: 'kz'
     };
@@ -1689,7 +2146,20 @@ class App{
       this.renderCustomMermaid();
     }
   }
-  currentUser(){ return localStorage.getItem('chd_username') || ''; }
+  currentUser(){ return (this.session && this.session.name) || localStorage.getItem('chd_username') || ''; }
+  isRegistered(){ return !!(this.session && this.session.name && this.session.department); }
+  isProduct(){ return this.isRegistered() && this.session.department === 'product'; }
+  actorName(){
+    if(!this.isRegistered()) return this.currentUser() || '—';
+    return this.session.name + ' (' + orgLabel(this.session.department) + ')';
+  }
+  closeOverlays(){
+    this.state.openCardId = null;
+    this.state.newCardOpen = false;
+    this.state.openHypId = null;
+    this.state.newHypOpen = false;
+    this.state.authOpen = false;
+  }
   viewToDept(view){
     const map = {legal:'Legal', finance:'Finance', accounting:'Accounting', operations:'Operations', development:'Development', ceo:'CEO'};
     return map[view] || null;
@@ -1725,6 +2195,7 @@ class App{
 
   renderAll(){
     this.renderSidebarActive();
+    renderSessionSlot(this);
     this.renderMain();
     this.renderModal();
   }
@@ -1736,12 +2207,13 @@ class App{
   renderMain(){
     const main = document.getElementById('main-content');
     if(!main) return;
-    if(this.state.search && this.state.search.trim()){
+    if(this.state.search && this.state.search.trim() && this.state.view !== 'hypotheses'){
       main.innerHTML = renderSearchResults(this);
       return;
     }
     switch(this.state.view){
       case 'overview':    main.innerHTML = renderOverview(this); break;
+      case 'hypotheses':  main.innerHTML = renderHypotheses(this); break;
       case 'legal':       main.innerHTML = renderDepartment(this, 'Legal'); break;
       case 'finance':     main.innerHTML = renderDepartment(this, 'Finance'); break;
       case 'accounting':  main.innerHTML = renderDepartment(this, 'Accounting'); break;
@@ -1757,7 +2229,15 @@ class App{
   renderModal(){
     const root = document.getElementById('modal-root');
     if(!root) return;
-    if(this.state.openCardId){
+    if(this.state.authOpen){
+      root.innerHTML = renderAuthModal(this);
+    } else if(this.state.newHypOpen){
+      root.innerHTML = renderNewHypModal(this);
+    } else if(this.state.openHypId){
+      const hyp = this.store.getHypothesis(this.state.openHypId);
+      if(!hyp){ this.state.openHypId = null; root.innerHTML = ''; return; }
+      root.innerHTML = renderHypModal(hyp, this);
+    } else if(this.state.openCardId){
       const card = this.store.getCard(this.state.openCardId);
       if(!card){ this.state.openCardId = null; root.innerHTML = ''; return; }
       root.innerHTML = renderCardModal(card, this);
@@ -1850,10 +2330,13 @@ class App{
   /* ---------- event handlers ---------- */
   handleClick(e){
     if(e.target.classList && e.target.classList.contains('modal-backdrop')){
-      this.state.openCardId = null;
-      this.state.newCardOpen = false;
+      this.closeOverlays();
       this.renderModal();
       return;
+    }
+    if(e.target.closest('.modal')){
+      const actionEl = e.target.closest('[data-action]');
+      if(actionEl && actionEl.classList.contains('modal-backdrop')) return;
     }
     const menu = document.getElementById('export-menu');
     if(menu && menu.classList.contains('open') && !e.target.closest('#export-menu-wrap')){
@@ -1886,10 +2369,84 @@ class App{
         this.renderModal();
         break;
       case 'close-modal':
-        this.state.openCardId = null;
-        this.state.newCardOpen = false;
+        this.closeOverlays();
         this.renderModal();
         break;
+      case 'open-auth':
+        this.closeOverlays();
+        this.state.authOpen = true;
+        this.renderModal();
+        break;
+      case 'logout':
+        this.session = null;
+        saveSession(null);
+        this.closeOverlays();
+        this.renderAll();
+        break;
+      case 'open-new-hyp':
+        if(!this.isRegistered()){ this.state.authOpen = true; this.renderModal(); break; }
+        if(this.isProduct()){ alert('Идеи направляют отделы. Смените регистрацию на отдел, чтобы создать гипотезу.'); break; }
+        this.closeOverlays();
+        this.state.newHypOpen = true;
+        this.renderModal();
+        break;
+      case 'open-hypothesis':
+        this.closeOverlays();
+        this.state.openHypId = el.dataset.hyp;
+        this.renderModal();
+        break;
+      case 'hyp-tab':
+        this.state.hypTab = el.dataset.tab;
+        this.renderMain();
+        break;
+      case 'hyp-focus-dept':
+        this.state.hypFilters.department = el.dataset.dept;
+        this.state.hypTab = 'dashboard';
+        this.renderMain();
+        break;
+      case 'hyp-set-status': {
+        if(!this.isProduct()) break;
+        const hyp = this.store.getHypothesis(el.dataset.hyp);
+        if(!hyp) break;
+        const next = el.dataset.status;
+        const label = hypStatus(next).label;
+        pushHypHistory(hyp, this.actorName(), 'Статус: '+label, '');
+        this.store.updateHypothesis(hyp.id, {status: next});
+        break;
+      }
+      case 'hyp-reject': {
+        if(!this.isProduct()) break;
+        const hyp = this.store.getHypothesis(el.dataset.hyp);
+        if(!hyp) break;
+        const reason = prompt('Причина отклонения:');
+        if(reason === null) break;
+        pushHypHistory(hyp, this.actorName(), 'Отклонена', reason.trim());
+        this.store.updateHypothesis(hyp.id, {status:'rejected', rejectReason: reason.trim()});
+        break;
+      }
+      case 'hyp-to-sprint': {
+        if(!this.isProduct()) break;
+        const hyp = this.store.getHypothesis(el.dataset.hyp);
+        if(!hyp) break;
+        const sprint = prompt('Название спринта:', hyp.sprint || '');
+        if(sprint === null) break;
+        const name = sprint.trim();
+        if(!name){ alert('Укажите спринт'); break; }
+        pushHypHistory(hyp, this.actorName(), 'Добавлена в спринт', name);
+        this.store.updateHypothesis(hyp.id, {status:'sprint', sprint: name});
+        break;
+      }
+      case 'delete-hyp': {
+        const hyp = this.store.getHypothesis(el.dataset.hyp);
+        if(!hyp) break;
+        const can = this.isProduct() || (this.isRegistered() && this.session.department === hyp.department);
+        if(!can) break;
+        if(confirm('Удалить гипотезу «'+hyp.title+'»?')){
+          this.state.openHypId = null;
+          this.store.deleteHypothesis(hyp.id);
+        }
+        break;
+      }
       case 'delete-card': {
         const card = this.store.getCard(el.dataset.card);
         if(card && confirm('Delete "' + card.title + '"? This cannot be undone.')){
@@ -2004,8 +2561,8 @@ class App{
       }
       card.updatedAt = Date.now();
       this.store.save();
-    } else if(action === 'filter-change'){
-      this.state.filters[el.dataset.field] = el.value;
+    } else if(action === 'hyp-filter'){
+      this.state.hypFilters[el.dataset.field] = el.value;
       this.renderMain();
     }
   }
@@ -2077,18 +2634,71 @@ class App{
       card.comments.push({id: uid('cmt'), author, text, ts: Date.now()});
       card.updatedAt = Date.now();
       this.store.save();
+    } else if(action === 'auth-form'){
+      const fd = new FormData(form);
+      const name = (fd.get('name') || '').trim();
+      const department = fd.get('department');
+      if(!name){ alert('Укажите имя'); return; }
+      if(!orgById(department)){ alert('Выберите отдел'); return; }
+      this.session = {name, department, registeredAt: Date.now()};
+      saveSession(this.session);
+      localStorage.setItem('chd_username', name);
+      this.state.authOpen = false;
+      this.renderAll();
+    } else if(action === 'new-hyp-form'){
+      if(!this.isRegistered()){ this.state.newHypOpen = false; this.state.authOpen = true; this.renderModal(); return; }
+      if(this.isProduct()){ alert('Идеи направляют отделы.'); return; }
+      const fd = new FormData(form);
+      const title = (fd.get('title') || '').trim();
+      if(!title){ alert('Укажите идею'); return; }
+      const department = this.session.department;
+      const hyp = {
+        id: uid('hyp'),
+        title,
+        description: (fd.get('description')||'').trim(),
+        expectedOutcome: (fd.get('expectedOutcome')||'').trim(),
+        department,
+        author: this.session.name,
+        status: 'submitted',
+        sprint: '',
+        report: '',
+        rejectReason: '',
+        history: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      pushHypHistory(hyp, this.actorName(), 'Направлена на реализацию', '');
+      this.state.newHypOpen = false;
+      this.state.openHypId = hyp.id;
+      this.store.addHypothesis(hyp);
+    } else if(action === 'hyp-report-form'){
+      if(!this.isProduct()) return;
+      const hyp = this.store.getHypothesis(form.dataset.hyp);
+      if(!hyp) return;
+      const fd = new FormData(form);
+      const sprint = (fd.get('sprint')||'').trim();
+      const report = (fd.get('report')||'').trim();
+      pushHypHistory(hyp, this.actorName(), 'Обновлён отчёт', sprint);
+      this.store.updateHypothesis(hyp.id, {sprint, report});
     }
   }
 
   handleKeydown(e){
-    if(e.key === 'Escape' && (this.state.openCardId || this.state.newCardOpen)){
-      this.state.openCardId = null;
-      this.state.newCardOpen = false;
+    if(e.key === 'Escape' && (this.state.openCardId || this.state.newCardOpen || this.state.openHypId || this.state.newHypOpen || this.state.authOpen)){
+      this.closeOverlays();
       this.renderModal();
     }
   }
 
   handleDragStart(e){
+    const hypTile = e.target.closest('.hyp-tile');
+    if(hypTile){
+      if(!this.isProduct()){ e.preventDefault(); return; }
+      e.dataTransfer.setData('text/plain', 'hyp:'+hypTile.dataset.hyp);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(()=>hypTile.classList.add('dragging'), 0);
+      return;
+    }
     const tile = e.target.closest('.card-tile');
     if(!tile) return;
     e.dataTransfer.setData('text/plain', tile.dataset.card);
@@ -2101,22 +2711,61 @@ class App{
     document.querySelectorAll('.kanban-col-body.drag-over').forEach(el=>el.classList.remove('drag-over'));
   }
   handleDragOver(e){
+    const hypZone = e.target.closest('[data-hyp-dropzone]');
+    if(hypZone){
+      if(!this.isProduct()) return;
+      e.preventDefault();
+      hypZone.classList.add('drag-over');
+      return;
+    }
     const zone = e.target.closest('[data-dropzone]');
     if(!zone) return;
     e.preventDefault();
     zone.classList.add('drag-over');
   }
   handleDragLeave(e){
+    const hypZone = e.target.closest('[data-hyp-dropzone]');
+    if(hypZone) hypZone.classList.remove('drag-over');
     const zone = e.target.closest('[data-dropzone]');
     if(zone) zone.classList.remove('drag-over');
   }
   handleDrop(e){
+    const hypZone = e.target.closest('[data-hyp-dropzone]');
+    if(hypZone){
+      e.preventDefault();
+      hypZone.classList.remove('drag-over');
+      if(!this.isProduct()) return;
+      const raw = e.dataTransfer.getData('text/plain');
+      if(!raw || raw.indexOf('hyp:') !== 0) return;
+      const hyp = this.store.getHypothesis(raw.slice(4));
+      if(!hyp) return;
+      const next = hypZone.dataset.hypStatus;
+      if(next === hyp.status) return;
+      let sprint = hyp.sprint || '';
+      if(next === 'sprint' && !sprint){
+        const entered = prompt('Название спринта:');
+        if(entered === null) return;
+        sprint = entered.trim();
+        if(!sprint){ alert('Укажите спринт'); return; }
+      }
+      const patch = {status: next};
+      if(sprint) patch.sprint = sprint;
+      if(next === 'rejected' && !hyp.rejectReason){
+        const reason = prompt('Причина отклонения:') || '';
+        patch.rejectReason = reason.trim();
+        pushHypHistory(hyp, this.actorName(), 'Отклонена', patch.rejectReason);
+      } else {
+        pushHypHistory(hyp, this.actorName(), 'Статус: '+hypStatus(next).label, sprint);
+      }
+      this.store.updateHypothesis(hyp.id, patch);
+      return;
+    }
     const zone = e.target.closest('[data-dropzone]');
     if(!zone) return;
     e.preventDefault();
     zone.classList.remove('drag-over');
     const cardId = e.dataTransfer.getData('text/plain');
-    if(cardId) this.store.updateCard(cardId, {status: zone.dataset.status});
+    if(cardId && cardId.indexOf('hyp:') !== 0) this.store.updateCard(cardId, {status: zone.dataset.status});
   }
 }
 
