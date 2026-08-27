@@ -1848,6 +1848,13 @@ function filteredHypotheses(app){
   }).slice().sort((a,b)=>b.updatedAt - a.updatedAt);
 }
 
+function hypAddButton(){
+  return '<button class="btn-primary" data-action="open-new-hyp">+ Идея</button>';
+}
+function hypEmptyCta(text){
+  return '<p class="muted">'+text+'</p><div style="margin-top:10px">'+hypAddButton()+'</div>';
+}
+
 function renderHypotheses(app){
   const all = app.store.hypotheses;
   const list = filteredHypotheses(app);
@@ -1862,7 +1869,6 @@ function renderHypotheses(app){
   const header = '<div class="view-header"><h1>Гипотезы</h1>' +
     '<p class="muted">Дашборды отделов и Product: идеи → рассмотрение → спринт → отчёт.</p></div>';
 
-  const canSubmit = app.isRegistered() && !app.isProduct();
   const toolbar = '<div class="hyp-toolbar">' +
     '<div class="tab-bar">' +
       '<button class="btn-mini'+(app.state.hypTab==='dashboard'?' active':'')+'" data-action="hyp-tab" data-tab="dashboard">Дашборд</button>' +
@@ -1880,9 +1886,7 @@ function renderHypotheses(app){
         sprints.map(s=>'<option value="'+esc(s)+'" '+(f.sprint===s?'selected':'')+'>'+esc(s)+'</option>').join('') +
       '</select>' +
     '</div>' +
-    (canSubmit ? '<button class="btn-primary" data-action="open-new-hyp">+ Идея</button>' :
-      (app.isProduct() ? '<span class="muted">Product: рассматривайте очередь и перетаскивайте карточки на доске</span>' :
-        '<button class="btn-secondary" data-action="open-auth">Регистрация по отделу</button>')) +
+    hypAddButton() +
   '</div>';
 
   const stats = '<div class="stat-grid">' +
@@ -1905,7 +1909,7 @@ function renderHypotheses(app){
         '</div>';
       }).join('') +
     '</div>';
-    const empty = all.length ? '' : '<p class="muted" style="margin-top:8px">Пока нет гипотез.</p>';
+    const empty = all.length ? '' : '<div class="panel" style="margin-top:8px">'+hypEmptyCta('Пока нет гипотез. Добавьте первую идею.')+'</div>';
     return header + toolbar + stats + board + empty;
   }
   return header + toolbar + stats + renderHypDashboard(app, list, all);
@@ -1943,7 +1947,7 @@ function renderHypDashboard(app, list, all){
           '<div class="muted">'+esc(orgLabel(h.department))+' · '+esc(h.author)+' · '+hypStatus(h.status).label+'</div>' +
         '</div>'+hypBadge(h.status) +
       '</div>'
-    ).join('') : '<p class="muted">Пусто — новых идей нет.</p>') +
+    ).join('') : hypEmptyCta('Пусто — новых идей нет.')) +
   '</div>';
 
   const sprintPanel = '<div class="panel"><h2>Текущий спринт ('+sprintItems.length+')</h2>' +
@@ -1970,10 +1974,12 @@ function renderHypDashboard(app, list, all){
   if(myDept){
     myPanel = '<div class="panel"><h2>Дашборд отдела: '+esc(orgLabel(myDept))+'</h2>' +
       (mine.length ? '<div class="tile-grid">'+mine.map(h=>renderHypTile(h, app)).join('')+'</div>' :
-        '<p class="muted">У отдела пока нет идей. Нажмите «+ Идея».</p>') +
+        hypEmptyCta('У отдела пока нет идей. Добавьте первую.')) +
     '</div>';
   } else if(app.isProduct()){
-    myPanel = '<div class="panel"><h2>Дашборд Product</h2><p class="muted">Берите идеи из очереди, ставьте в спринт на доске, фиксируйте результат в отчётности.</p></div>';
+    myPanel = '<div class="panel"><h2>Дашборд Product</h2><p class="muted">Берите идеи из очереди, ставьте в спринт на доске, фиксируйте результат в отчётности. Можно добавить идею от имени отдела.</p><div style="margin-top:10px">'+hypAddButton()+'</div></div>';
+  } else {
+    myPanel = all.length ? '' : '<div class="panel"><h2>Начать</h2>'+hypEmptyCta('Пока нет гипотез. Добавьте первую идею.')+'</div>';
   }
 
   return '<h2 style="font-size:15px;font-weight:650;margin:0 0 12px;">Дашборды отделов</h2>' + deptCards +
@@ -1983,7 +1989,7 @@ function renderHypDashboard(app, list, all){
 }
 
 function renderHypReport(list){
-  if(!list.length) return '<div class="panel"><p class="muted">Нет гипотез по текущим фильтрам.</p></div>';
+  if(!list.length) return '<div class="panel"><h2>Отчёт по гипотезам</h2>'+hypEmptyCta('Нет гипотез по текущим фильтрам.')+'</div>';
   return '<div class="panel"><h2>Отчёт по гипотезам</h2>' +
     '<div class="hyp-table-wrap"><table class="hyp-table">' +
       '<thead><tr><th>Идея</th><th>Отдел</th><th>Статус</th><th>Спринт</th><th>Автор</th><th>Обновлено</th><th>Результат</th></tr></thead>' +
@@ -2126,6 +2132,7 @@ class App{
       openHypId: null,
       newHypOpen: false,
       authOpen: false,
+      pendingNewHyp: false,
       meeting: false,
       customTab: 'kz'
     };
@@ -2159,6 +2166,7 @@ class App{
     this.state.openHypId = null;
     this.state.newHypOpen = false;
     this.state.authOpen = false;
+    this.state.pendingNewHyp = false;
   }
   viewToDept(view){
     const map = {legal:'Legal', finance:'Finance', accounting:'Accounting', operations:'Operations', development:'Development', ceo:'CEO'};
@@ -2384,9 +2392,13 @@ class App{
         this.renderAll();
         break;
       case 'open-new-hyp':
-        if(!this.isRegistered()){ this.state.authOpen = true; this.renderModal(); break; }
-        if(this.isProduct()){ alert('Идеи направляют отделы. Смените регистрацию на отдел, чтобы создать гипотезу.'); break; }
         this.closeOverlays();
+        if(!this.isRegistered()){
+          this.state.pendingNewHyp = true;
+          this.state.authOpen = true;
+          this.renderModal();
+          break;
+        }
         this.state.newHypOpen = true;
         this.renderModal();
         break;
@@ -2644,14 +2656,30 @@ class App{
       saveSession(this.session);
       localStorage.setItem('chd_username', name);
       this.state.authOpen = false;
+      if(this.state.pendingNewHyp){
+        this.state.pendingNewHyp = false;
+        this.state.newHypOpen = true;
+      }
       this.renderAll();
     } else if(action === 'new-hyp-form'){
-      if(!this.isRegistered()){ this.state.newHypOpen = false; this.state.authOpen = true; this.renderModal(); return; }
-      if(this.isProduct()){ alert('Идеи направляют отделы.'); return; }
+      if(!this.isRegistered()){
+        this.state.newHypOpen = false;
+        this.state.pendingNewHyp = true;
+        this.state.authOpen = true;
+        this.renderModal();
+        return;
+      }
       const fd = new FormData(form);
       const title = (fd.get('title') || '').trim();
       if(!title){ alert('Укажите идею'); return; }
-      const department = this.session.department;
+      let department = (fd.get('department') || '').trim();
+      if(this.session.department && this.session.department !== 'product'){
+        department = this.session.department;
+      }
+      if(!department || department === 'product' || !orgById(department)){
+        alert('Выберите отдел');
+        return;
+      }
       const hyp = {
         id: uid('hyp'),
         title,
