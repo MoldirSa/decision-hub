@@ -494,6 +494,7 @@ const SESSION_KEY = 'decisionHub_session_v1';
 const NAV_ITEMS = [
   {id:'overview',    label:'Overview',          icon:'⌂'},
   {id:'hypotheses',  label:'Гипотезы',          icon:'◇'},
+  {id:'e1-ux',       label:'User journey',      icon:'▣'},
   {id:'legal',       label:'Legal',             icon:'⚖'},
   {id:'finance',     label:'Finance',           icon:'$'},
   {id:'accounting',  label:'Accounting',        icon:'#'},
@@ -2222,6 +2223,16 @@ class App{
     switch(this.state.view){
       case 'overview':    main.innerHTML = renderOverview(this); break;
       case 'hypotheses':  main.innerHTML = renderHypotheses(this); break;
+      case 'e1-ux':
+        main.innerHTML =
+          '<div style="display:flex;flex-direction:column;height:calc(100vh - 64px);padding:0;margin:0;">' +
+            '<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bg-elevated);">' +
+              '<div><strong>User journey</strong> <span class="muted">E1 · регистрация, legal gates, Balance, Flow</span></div>' +
+              '<a class="btn-secondary" href="e1-registration-ux.html" target="_blank" rel="noopener">Открыть отдельно ↗</a>' +
+            '</div>' +
+            '<iframe src="e1-registration-ux.html" title="E1 Registration UX" style="flex:1;width:100%;border:0;background:#0b1220;"></iframe>' +
+          '</div>';
+        break;
       case 'legal':       main.innerHTML = renderDepartment(this, 'Legal'); break;
       case 'finance':     main.innerHTML = renderDepartment(this, 'Finance'); break;
       case 'accounting':  main.innerHTML = renderDepartment(this, 'Accounting'); break;
