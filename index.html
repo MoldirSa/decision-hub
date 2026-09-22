@@ -2136,7 +2136,7 @@ class App{
       pendingNewHyp: false,
       meeting: false,
       customTab: 'kz',
-      journeyVersion: 'tobe'
+      journeyVersion: 'moldir'
     };
     this.customDiagrams = {};
     CUSTOM_DIAGRAM_TABS.forEach(t=>{
@@ -2225,23 +2225,25 @@ class App{
       case 'overview':    main.innerHTML = renderOverview(this); break;
       case 'hypotheses':  main.innerHTML = renderHypotheses(this); break;
       case 'e1-ux': {
-        const isAsis = this.state.journeyVersion === 'asis';
-        const src = isAsis ? 'e1-registration-ux-asis.html' : 'e1-registration-ux.html';
-        const bg = isAsis ? '#eef1f5' : '#0b1220';
-        const caption = isAsis
-          ? 'AS-IS · текущие экраны кабинета'
-          : 'TO-BE · рекомендованный сценарий';
+        const ver = this.state.journeyVersion || 'moldir';
+        const map = {
+          moldir: { src: 'e1-registration-ux-asis.html', bg: '#eef1f5', caption: 'Молдир · текущее · прод по скринам' },
+          cjm:    { src: 'e1-registration-ux-cjm.html',  bg: '#eef1f5', caption: 'CJM v2 · рекомендованный путь' },
+          legal:  { src: 'e1-registration-ux.html',      bg: '#0b1220', caption: 'E1 Legal · эпик (без изменений)' }
+        };
+        const cfg = map[ver] || map.moldir;
         main.innerHTML =
           '<div style="display:flex;flex-direction:column;height:calc(100vh - 64px);padding:0;margin:0;">' +
             '<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg-elevated);">' +
-              '<div><strong>User journey</strong> <span class="muted">' + caption + '</span></div>' +
+              '<div><strong>User journey</strong> <span class="muted">' + cfg.caption + '</span></div>' +
               '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                '<button type="button" class="btn-secondary' + (!isAsis ? ' active' : '') + '" data-journey="tobe">Рекомендуемый</button>' +
-                '<button type="button" class="btn-secondary' + (isAsis ? ' active' : '') + '" data-journey="asis">Текущий (as-is)</button>' +
-                '<a class="btn-secondary" href="' + src + '" target="_blank" rel="noopener">Открыть отдельно ↗</a>' +
+                '<button type="button" class="btn-secondary' + (ver === 'moldir' ? ' active' : '') + '" data-journey="moldir">Молдир — текущее</button>' +
+                '<button type="button" class="btn-secondary' + (ver === 'cjm' ? ' active' : '') + '" data-journey="cjm">CJM v2</button>' +
+                '<button type="button" class="btn-secondary' + (ver === 'legal' ? ' active' : '') + '" data-journey="legal">E1 Legal</button>' +
+                '<a class="btn-secondary" href="' + cfg.src + '" target="_blank" rel="noopener">Открыть отдельно ↗</a>' +
               '</div>' +
             '</div>' +
-            '<iframe src="' + src + '" title="User journey" style="flex:1;width:100%;border:0;background:' + bg + ';"></iframe>' +
+            '<iframe src="' + cfg.src + '" title="User journey" style="flex:1;width:100%;border:0;background:' + cfg.bg + ';"></iframe>' +
           '</div>';
         main.querySelectorAll('[data-journey]').forEach((btn) => {
           btn.addEventListener('click', () => {

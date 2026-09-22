@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>E1 · Текущие экраны (AS-IS)</title>
+  <title>Молдир · текущее</title>
   <style>
     :root {
       --page: #eef1f5;
@@ -243,14 +243,14 @@
 <body>
   <div class="page">
     <a class="back" href="index.html">← Назад в Decision Hub</a>
-    <h1>Текущий путь · AS-IS виджеты</h1>
+    <h1>Молдир · текущее</h1>
     <p class="lede">
-      Последовательность экранов, как сейчас на <strong>cabinet.biometric.kz</strong>.
-      Это не рекомендованный сценарий — только фиксация текущего UI.
+      Существующие шаги флоу по скринам <strong>cabinet.biometric.kz</strong>:
+      Email → OTP → Компания (в регистрации) → Главная → Шаблоны → Баланс.
     </p>
     <div class="banner">
-      <strong>Источник:</strong> скрины продакшена 22.09.2026.
-      Шаг пароля / ToS / «Перейти ко входу» на скринах нет — в этой версии не дорисовываем.
+      <strong>Это линия Молдир / текущий прод.</strong>
+      Не CJM v2: company и объём на реге, sandbox нет, после входа сразу «создать флоу».
     </div>
 
     <div class="group-label">Регистрация</div>
@@ -561,7 +561,7 @@
       preview.appendChild(tpl.content.cloneNode(true));
       fillProgress(preview);
       document.getElementById("side-title").textContent = meta.label;
-      document.getElementById("side-id").textContent = "AS-IS · " + meta.id;
+      document.getElementById("side-id").textContent = "Молдир · текущее · " + meta.id;
       const notes = document.getElementById("side-notes");
       notes.innerHTML = "";
       meta.notes.forEach((n) => {
