@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E1 · Текущие экраны (AS-IS)</title>
+  <style>
+    :root {
+      --page: #eef1f5;
+      --white: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --line: #e5e7eb;
+      --line-strong: #d1d5db;
+      --yellow: #ffd600;
+      --yellow-btn: #ffe14a;
+      --yellow-bar: #f5c400;
+      --red: #ef4444;
+      --sidebar: #f7f8fa;
+      --chip: #f3f4f6;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --shadow: 0 8px 32px rgba(15, 23, 42, .08);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--page); color: var(--text); min-height: 100vh; }
+    .page { max-width: 1280px; margin: 0 auto; padding: 24px 18px 48px; }
+    .back { display: inline-block; margin-bottom: 12px; color: #2563eb; text-decoration: none; font-size: .9rem; }
+    h1 { margin: 0 0 6px; font-size: 1.55rem; font-weight: 700; }
+    .lede { margin: 0 0 14px; color: var(--muted); max-width: 78ch; line-height: 1.45; font-size: .92rem; }
+    .banner {
+      background: #fff7cc; border: 1px solid #f1de7a; border-radius: 10px;
+      padding: 10px 14px; color: #5b4a12; font-size: .86rem; margin-bottom: 18px; line-height: 1.4;
+    }
+    .banner strong { color: #3f3208; }
+    .group-label {
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--faint); margin: 12px 0 8px; font-weight: 650;
+    }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tab {
+      appearance: none; border: 1px solid var(--line-strong); background: #fff;
+      color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: .82rem; cursor: pointer;
+    }
+    .tab:hover { color: var(--text); border-color: #9ca3af; }
+    .tab.active { background: var(--yellow); border-color: var(--yellow); color: #111; font-weight: 650; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; margin-top: 20px; align-items: start; }
+    @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+    .side { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px; }
+    .side h3 { margin: 0 0 4px; font-size: 1.05rem; }
+    .side .id { color: var(--faint); font-size: .78rem; margin-bottom: 12px; }
+    .side hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
+    .notes { list-style: none; padding: 0; margin: 0; }
+    .notes li {
+      background: #f8fafc; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+      font-size: .82rem; color: var(--muted); line-height: 1.35;
+    }
+    .nav-btns { display: flex; gap: 8px; }
+    .nav-btns button {
+      appearance: none; border-radius: 8px; padding: 9px 12px; font-size: .85rem;
+      cursor: pointer; font-weight: 650;
+    }
+    .nav-btns .prev { background: #fff; border: 1px solid var(--line-strong); color: var(--text); }
+    .nav-btns .next { background: var(--yellow); border: 1px solid var(--yellow); color: #111; }
+    .nav-btns button:disabled { opacity: .35; cursor: not-allowed; }
+
+    .chrome {
+      background: #fff; border: 1px solid var(--line-strong); border-radius: 14px;
+      overflow: hidden; box-shadow: var(--shadow);
+    }
+    .chrome-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: #f4f5f7; border-bottom: 1px solid var(--line);
+      font-size: .75rem; color: var(--muted);
+    }
+    .dots { display: flex; gap: 5px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; font-style: normal; display: block; }
+    .url {
+      flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 6px;
+      padding: 5px 10px; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .widget { background: #fff; }
+    .progress { display: flex; gap: 8px; margin: 18px 0 20px; }
+    .progress span { height: 4px; flex: 1; border-radius: 99px; background: #ececec; }
+    .progress span.on { background: var(--yellow-bar); }
+
+    .auth-wrap { max-width: 520px; margin: 0 auto; padding: 48px 28px 40px; }
+    .auth-title { margin: 0 0 8px; font-size: 1.7rem; font-weight: 750; letter-spacing: -.02em; }
+    .auth-title .y { color: #eab308; }
+    .auth-sub { margin: 0; color: var(--muted); font-size: .95rem; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .82rem; color: #4b5563; margin-bottom: 6px; }
+    .req { color: var(--red); font-size: .78rem; }
+    .opt { color: var(--muted); font-size: .78rem; }
+    .box, select.box {
+      width: 100%; border: 1px solid #e5e7eb; background: #fff; border-radius: 10px;
+      padding: 12px 14px; font-size: .95rem; color: var(--text); appearance: none;
+    }
+    .box.ph { color: #9ca3af; }
+    .box.focus { border-color: var(--yellow-bar); box-shadow: 0 0 0 1px var(--yellow-bar); }
+    .sel { position: relative; }
+    .sel::after {
+      content: "▾"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: #9ca3af; pointer-events: none; font-size: .8rem;
+    }
+    .btn {
+      appearance: none; border: none; border-radius: 10px; padding: 12px 18px;
+      font-size: .95rem; font-weight: 650; cursor: default; text-align: center;
+    }
+    .btn.yellow { background: var(--yellow-btn); color: #1f2937; }
+    .btn.ghost {
+      background: #fff; border: 1px solid var(--line-strong); color: var(--text);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn.full { width: 100%; display: block; }
+    .foot { margin-top: 16px; text-align: center; color: var(--muted); font-size: .85rem; }
+    .foot a { color: #ca8a04; text-decoration: none; font-weight: 600; }
+    .hint { margin: 4px 0 16px; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+
+    .otp-page { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; min-height: 520px; }
+    @media (max-width: 860px) { .otp-page { grid-template-columns: 1fr; } }
+    .otp-form { padding: 42px 28px 32px 36px; }
+    .otp-boxes { display: flex; gap: 10px; margin: 10px 0 18px; }
+    .otp-boxes i {
+      width: 48px; height: 52px; border-radius: 10px; border: 1.5px solid var(--yellow-bar);
+      display: grid; place-items: center; font-style: normal; font-size: 1.2rem; font-weight: 650;
+    }
+    .otp-actions { display: flex; gap: 10px; align-items: center; }
+    .otp-actions .btn.yellow { min-width: 160px; }
+    .resend { margin: 10px 0 0 58px; color: #ca8a04; font-size: .85rem; font-weight: 600; }
+    .otp-preview { background: linear-gradient(#f6f7fb, #eef1f6); padding: 28px 22px; display: flex; align-items: center; }
+    .console {
+      background: #fff; border-radius: 16px; box-shadow: 0 18px 50px rgba(15,23,42,.12);
+      width: 100%; overflow: hidden; border: 1px solid #edf0f4;
+    }
+    .console-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: .78rem; color: #6b7280;
+    }
+    .console-body { display: grid; grid-template-columns: 132px 1fr; min-height: 280px; }
+    .console-nav { background: #fafafa; border-right: 1px solid var(--line); padding: 10px 8px; font-size: .72rem; color: #6b7280; }
+    .console-nav .item { padding: 6px 8px; border-radius: 6px; margin-bottom: 2px; }
+    .console-nav .item.on { background: #fff4b0; color: #111; font-weight: 650; }
+    .console-table { padding: 10px 12px; }
+    .row { display: grid; grid-template-columns: 28px 1.2fr 1fr 70px 80px; gap: 8px; padding: 7px 4px; font-size: .68rem; color: #4b5563; align-items: center; }
+    .row.head { color: #9ca3af; font-size: .62rem; text-transform: uppercase; }
+    .pill { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: .62rem; background: #dcfce7; color: #166534; }
+    .pill.fail { background: #fce7f3; color: #9d174d; }
+    .ava { width: 18px; height: 18px; border-radius: 50%; background: #e5e7eb; }
+
+    .cab { display: grid; grid-template-columns: 56px 1fr; min-height: 520px; background: #f7f8fa; }
+    .rail {
+      background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column;
+      align-items: center; padding: 10px 0 14px; gap: 6px;
+    }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--yellow);
+      display: grid; place-items: center; font-size: .72rem; font-weight: 800; margin-bottom: 8px;
+    }
+    .rail .ico {
+      width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+      color: #9ca3af; font-size: .95rem;
+    }
+    .rail .ico.on { background: #fff8cc; color: #111; }
+    .cab-main { padding: 12px 16px 20px; }
+    .cab-top {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #fff; border: 1px solid var(--line); border-radius: 10px;
+      padding: 8px 12px; margin-bottom: 12px; font-size: .88rem; font-weight: 650;
+    }
+    .lang { font-weight: 500; color: var(--muted); font-size: .8rem; border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: #fff; }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 22px 24px; margin-bottom: 12px;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 1.35rem; }
+    .card p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.45; max-width: 78ch; }
+    .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+
+    .modal-back { position: relative; min-height: 560px; background: #f3f4f6; }
+    .modal {
+      background: #fff; border-radius: 16px 16px 0 0; min-height: 560px;
+      padding: 18px 22px 24px; box-shadow: 0 -8px 30px rgba(0,0,0,.06);
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .modal-head h2 { margin: 0; font-size: 1.25rem; }
+    .modal-head .x { font-size: 1.2rem; color: #9ca3af; }
+    .search {
+      margin: 12px 0 12px; border: 1px solid var(--line); border-radius: 10px;
+      padding: 10px 12px; color: var(--faint); font-size: .9rem;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: .78rem; color: #4b5563; background: #fff; }
+    .chip.on { border-color: var(--yellow-bar); color: #111; font-weight: 650; }
+    .sec { font-size: .72rem; color: var(--faint); letter-spacing: .04em; margin: 8px 0 10px; font-weight: 700; }
+    .tpl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 800px) { .tpl-grid { grid-template-columns: 1fr 1fr; } }
+    .tpl {
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; min-height: 148px;
+    }
+    .tpl-art { height: 78px; position: relative; }
+    .price {
+      position: absolute; top: 8px; right: 8px; background: #fff; border-radius: 99px;
+      font-size: .68rem; padding: 3px 7px; font-weight: 650; color: #374151;
+    }
+    .badge-rec {
+      position: absolute; top: 8px; left: 8px; background: var(--yellow); border-radius: 6px;
+      font-size: .62rem; font-weight: 800; padding: 3px 6px; letter-spacing: .02em;
+    }
+    .icons { position: absolute; left: 12px; bottom: 10px; display: flex; gap: 4px; }
+    .icons b {
+      width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,.75);
+      display: grid; place-items: center; font-size: .65rem; font-weight: 500; color: #4b5563;
+    }
+    .tpl-body { padding: 10px 12px 12px; }
+    .tpl-body strong { display: block; font-size: .88rem; margin-bottom: 3px; }
+    .tpl-body span { font-size: .75rem; color: var(--muted); }
+    .art-green { background: #d9f0d7; }
+    .art-lilac { background: #e8d7f7; }
+    .art-blue { background: #d7eaf8; }
+    .art-peach { background: #f8e2c8; }
+    .art-orange { background: #f7d9b8; }
+    .art-violet { background: #e4d4f6; }
+
+    .bal-page { background: #fff; min-height: 420px; padding: 18px 22px 28px; }
+    .bal-page h2 { margin: 0 0 16px; font-size: 1.15rem; font-weight: 650; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+    .bal-card {
+      width: min(360px, 100%); border: 1px solid var(--line); border-radius: 14px; padding: 16px 16px 14px;
+    }
+    .bal-card .lab { font-size: .7rem; color: var(--faint); letter-spacing: .04em; font-weight: 700; }
+    .bal-card .amt { font-size: 1.8rem; font-weight: 750; margin: 8px 0 12px; }
+    .wallet {
+      float: right; width: 34px; height: 34px; border-radius: 50%; background: #f3f4f6;
+      display: grid; place-items: center; color: #9ca3af;
+    }
+    .hist { margin-top: 28px; color: #374151; font-weight: 650; padding-top: 8px; border-top: 1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="index.html">← Назад в Decision Hub</a>
+    <h1>Текущий путь · AS-IS виджеты</h1>
+    <p class="lede">
+      Последовательность экранов, как сейчас на <strong>cabinet.biometric.kz</strong>.
+      Это не рекомендованный сценарий — только фиксация текущего UI.
+    </p>
+    <div class="banner">
+      <strong>Источник:</strong> скрины продакшена 22.09.2026.
+      Шаг пароля / ToS / «Перейти ко входу» на скринах нет — в этой версии не дорисовываем.
+    </div>
+
+    <div class="group-label">Регистрация</div>
+    <div class="tabs" id="tabs-reg"></div>
+    <div class="group-label">Кабинет</div>
+    <div class="tabs" id="tabs-cab"></div>
+
+    <div class="layout">
+      <div id="preview"></div>
+      <aside class="side">
+        <h3 id="side-title">—</h3>
+        <div class="id" id="side-id">—</div>
+        <hr />
+        <div style="font-weight:650;margin-bottom:8px;font-size:.85rem;">Что на экране</div>
+        <ul class="notes" id="side-notes"></ul>
+        <hr />
+        <div class="nav-btns">
+          <button type="button" class="prev" id="btn-prev">Назад</button>
+          <button type="button" class="next" id="btn-next">Следующий экран</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <template id="tpl-email">
+    <div class="chrome">
+      <div class="widget">
+        <div class="auth-wrap">
+          <h2 class="auth-title">Регистрация в <span class="y">Biometric</span></h2>
+          <p class="auth-sub">Введите корпоративный email для начала регистрации.</p>
+          <div class="progress" data-filled="1" data-total="4"></div>
+          <div class="field">
+            <label>Рабочий email</label>
+            <div class="box focus ph">name@company.com</div>
+          </div>
+          <div class="btn yellow full">Продолжить</div>
+          <p class="foot">Уже есть аккаунт? <a href="#">Войти</a></p>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-otp">
+    <div class="chrome">
+      <div class="otp-page">
+        <div class="otp-form">
+          <h2 class="auth-title" style="font-size:1.45rem;">Подтверждение email</h2>
+          <p class="auth-sub">Введите код, отправленный на вашу почту.</p>
+          <div class="progress" data-filled="2" data-total="4"></div>
+          <p class="auth-sub" style="margin-bottom:14px;line-height:1.45;">
+            Код подтверждения отправлен на <strong style="color:var(--text)">kilimay675@jobsai.com</strong>.<br />
+            Введите его ниже для продолжения.
+          </p>
+          <div style="font-size:.82rem;color:#4b5563;margin-bottom:6px;">Код подтверждения</div>
+          <div class="otp-boxes"><i>7</i><i>8</i><i>4</i><i>9</i></div>
+          <div class="otp-actions">
+            <div class="btn ghost">&lt; Назад</div>
+            <div class="btn yellow">Подтвердить</div>
+          </div>
+          <div class="resend">Отправить код повторно</div>
+          <p class="foot" style="text-align:left;margin-top:18px;">Уже есть аккаунт? <a href="#">Войти</a></p>
+        </div>
+        <div class="otp-preview">
+          <div class="console">
+            <div class="console-top">
+              <strong style="color:#111">Biometric Business Console</strong>
+              <span>English · manager@acme.com</span>
+            </div>
+            <div class="console-body">
+              <div class="console-nav">
+                <div class="item">Home</div>
+                <div class="item on">Sessions</div>
+                <div class="item">Workflows</div>
+                <div class="item">Reports</div>
+              </div>
+              <div class="console-table">
+                <div class="row head"><span>#</span><span>Person</span><span>Flow</span><span>Status</span><span>Date</span></div>
+                <div class="row"><span>1</span><span><i class="ava"></i> Jane Doe</span><span>KYC Standard</span><span><i class="pill">Passed</i></span><span>May 10</span></div>
+                <div class="row"><span>2</span><span><i class="ava"></i> Luis Romero</span><span>KYC + IP</span><span><i class="pill">Passed</i></span><span>May 10</span></div>
+                <div class="row"><span>3</span><span><i class="ava"></i> Priya Sharma</span><span>Liveness</span><span><i class="pill fail">Failed</i></span><span>May 10</span></div>
+                <div class="row"><span>4</span><span><i class="ava"></i> Carmen Fields</span><span>Digital KYC</span><span><i class="pill">Passed</i></span><span>May 10</span></div>
+                <div class="row"><span>5</span><span><i class="ava"></i> Antonov</span><span>KYC + address</span><span><i class="pill">Passed</i></span><span>May 09</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-company">
+    <div class="chrome">
+      <div class="chrome-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="url">https://cabinet.biometric.kz/auth/register</div>
+      </div>
+      <div class="widget">
+        <div class="auth-wrap" style="padding-top:28px;">
+          <h2 class="auth-title" style="font-size:1.7rem;">Данные компании</h2>
+          <p class="auth-sub">Заполните данные организации.</p>
+          <div class="progress" data-filled="3" data-total="4"></div>
+          <div class="field"><label>Название компании <span class="req">(обязательно)</span></label><div class="box">Biometric</div></div>
+          <div class="field"><label>Тип клиента <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите тип клиента</div></div></div>
+          <div class="field"><label>Сфера деятельности <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите сферу</div></div></div>
+          <div class="field"><label>БИН организации <span class="req">(обязательно)</span></label><div class="box ph">БИН</div></div>
+          <div class="field"><label>Страна <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите страну</div></div></div>
+          <div class="field"><label>Планируемый объём транзакций <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите объём</div></div></div>
+          <div class="field"><label>Телефон <span class="opt">(необязательно)</span></label><div class="box">&nbsp;</div></div>
+          <p class="hint">Чтобы продолжить, заполните все обязательные поля, выберите разрешённую страну и примите все обязательные документы.</p>
+          <div style="display:flex;gap:10px;">
+            <div class="btn ghost">&lt; Назад</div>
+            <div class="btn yellow" style="flex:1;">Продолжить</div>
+          </div>
+          <p class="foot">Уже есть аккаунт? <a href="#">Войти</a></p>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-home">
+    <div class="chrome">
+      <div class="chrome-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="url">https://cabinet.biometric.kz/dashboard</div>
+      </div>
+      <div class="cab">
+        <aside class="rail">
+          <div class="avatar">YF</div>
+          <div class="ico on">⌂</div>
+          <div class="ico">▤</div>
+          <div class="ico">☰</div>
+          <div class="ico">👤</div>
+          <div class="ico">◎</div>
+          <div class="ico">📁</div>
+          <div class="ico">⌕</div>
+          <div class="ico">📄</div>
+        </aside>
+        <div class="cab-main">
+          <div class="cab-top"><span>Главная</span><span class="lang">Русский ▾</span></div>
+          <div class="card">
+            <h2>Добро пожаловать в Личный Кабинет Biometric.Vision!</h2>
+            <p>Автоматизируем бизнес-процессы и предотвращаем цифровое мошенничество при помощи биометрии и искусственного интеллекта с 2017 года. Сокращайте издержки, улучшайте пользовательский опыт и избавьтесь от рутины вместе с продуктами от Biometric.Vision. Быстро, просто, безопасно.</p>
+          </div>
+          <div class="card">
+            <h3>Для работы с нашей системой необходимо создать флоу</h3>
+            <p style="margin-bottom:14px;">Флоу — это интерфейс, к которому вы подключаете модули с технологиями биометрии в нужной вам последовательности.</p>
+            <div class="btn yellow" style="display:inline-block;">+ Создать флоу</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-templates">
+    <div class="chrome">
+      <div class="chrome-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="url">https://cabinet.biometric.kz/dashboard · модалка шаблонов</div>
+      </div>
+      <div class="modal-back">
+        <div class="modal">
+          <div class="modal-head">
+            <div>
+              <h2>Выберите шаблон</h2>
+              <p class="auth-sub" style="margin-top:4px;">Начните с шаблона или создайте процесс с нуля</p>
+            </div>
+            <div class="x">✕</div>
+          </div>
+          <div class="search">⌕  Поиск шаблонов...</div>
+          <div class="chips">
+            <span class="chip on">Все отрасли</span>
+            <span class="chip">Финтех</span>
+            <span class="chip">Банкинг</span>
+            <span class="chip">Крипто и Web3</span>
+            <span class="chip">Кредитование и BNPL</span>
+            <span class="chip">Страхование</span>
+            <span class="chip">Здравоохранение</span>
+            <span class="chip">Электронная коммерция</span>
+            <span class="chip">Маркетплейс</span>
+            <span class="chip">iGaming</span>
+            <span class="chip">Телеком</span>
+            <span class="chip">Госсектор</span>
+            <span class="chip">Образование</span>
+          </div>
+          <div class="sec">С НУЛЯ</div>
+          <div class="tpl-grid" style="margin-bottom:16px;">
+            <div class="tpl">
+              <div class="tpl-art art-green"></div>
+              <div class="tpl-body"><strong>С нуля</strong><span>Создайте процесс с нуля с полным контролем над технологиями.</span></div>
+            </div>
+          </div>
+          <div class="sec">ВЕРИФИКАЦИЯ ЛИЧНОСТИ</div>
+          <div class="tpl-grid">
+            <div class="tpl">
+              <div class="tpl-art art-lilac"><span class="price">$0.25</span><div class="icons"><b>◎</b></div></div>
+              <div class="tpl-body"><strong>Только Liveness</strong><span>Базовая проверка живости.</span></div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-art art-blue"><span class="badge-rec">РЕКОМЕНДУЕТСЯ</span><span class="price">$0.47 – $2.41</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
+              <div class="tpl-body"><strong>Стандартный KYC</strong><span>Стандартная верификация с liveness, распознаванием…</span></div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-art art-blue"><span class="price">$0.57 – $2.41</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
+              <div class="tpl-body"><strong>Стандартный KYC + IP</strong><span>Стандартный KYC с дополнительной проверкой IP…</span></div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-art art-peach"><span class="price">$0.47 – $1.62</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
+              <div class="tpl-body"><strong>Цифровой KYC</strong><span>Верификация в цифровой среде.</span></div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-art art-orange"><span class="price">$0.57 – $1.62</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
+              <div class="tpl-body"><strong>Цифровой KYC + IP</strong><span>Цифровой KYC с дополнительной проверкой IP.</span></div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-art art-violet"><span class="price">$0.57 – $2.23</span><div class="icons"><b>◎</b><b>▤</b><b>📍</b><b>▣</b><b>+5</b></div></div>
+              <div class="tpl-body"><strong>KYC + адрес</strong><span>KYC с проверкой адреса.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-balance">
+    <div class="chrome">
+      <div class="chrome-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="url">https://cabinet.biometric.kz · Баланс</div>
+      </div>
+      <div class="cab">
+        <aside class="rail">
+          <div class="avatar">YF</div>
+          <div class="ico">⌂</div>
+          <div class="ico">▤</div>
+          <div class="ico">☰</div>
+          <div class="ico">👤</div>
+          <div class="ico">◎</div>
+          <div class="ico">📁</div>
+          <div class="ico">⌕</div>
+          <div class="ico on">📄</div>
+        </aside>
+        <div class="cab-main" style="padding:0;background:#fff;">
+          <div class="bal-page">
+            <h2>Баланс</h2>
+            <div class="bal-card">
+              <div class="wallet">👛</div>
+              <div class="lab">ТЕКУЩИЙ БАЛАНС</div>
+              <div class="amt">$181.32</div>
+              <div class="btn yellow" style="display:inline-block;padding:8px 14px;font-size:.85rem;">+ Пополнить</div>
+            </div>
+            <div class="hist">История операций</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const SCREENS = [
+      { id: "email", group: "Registration", label: "1. Email",
+        notes: ["Корпоративный / рабочий email", "Прогресс 1 из 4", "CTA «Продолжить»", "Ссылка «Войти» под формой"] },
+      { id: "otp", group: "Registration", label: "2. OTP",
+        notes: ["4-значный код", "Прогресс 2 из 4", "Resend без таймера на скрине", "Справа — превью консоли", "Снова «Войти»"] },
+      { id: "company", group: "Registration", label: "3. Компания",
+        notes: ["URL /auth/register", "Прогресс 3 из 4", "6 обязательных полей + телефон", "Страна и объём — на этом шаге", "Документы упомянуты в хинте, чекбоксов на скрине нет"] },
+      { id: "home", group: "Cabinet", label: "4. Главная",
+        notes: ["После входа — empty state", "Нет чеклиста онбординга", "Единственный CTA: создать флоу"] },
+      { id: "templates", group: "Cabinet", label: "5. Шаблоны",
+        notes: ["Модалка поверх кабинета", "Цены на карточке", "«Стандартный KYC» — рекомендуется", "Отраслевые фильтры"] },
+      { id: "balance", group: "Cabinet", label: "6. Баланс",
+        notes: ["Текущий баланс $181.32", "CTA «Пополнить»", "История операций пустая на скрине"] },
+    ];
+    let current = "email";
+
+    function fillProgress(root) {
+      root.querySelectorAll(".progress").forEach((el) => {
+        const filled = Number(el.dataset.filled || 0);
+        const total = Number(el.dataset.total || 4);
+        el.innerHTML = "";
+        for (let i = 0; i < total; i++) {
+          const s = document.createElement("span");
+          if (i < filled) s.classList.add("on");
+          el.appendChild(s);
+        }
+      });
+    }
+    function renderTabs() {
+      const map = {
+        Registration: document.getElementById("tabs-reg"),
+        Cabinet: document.getElementById("tabs-cab"),
+      };
+      Object.values(map).forEach((el) => (el.innerHTML = ""));
+      SCREENS.forEach((s) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tab" + (s.id === current ? " active" : "");
+        btn.textContent = s.label;
+        btn.addEventListener("click", () => show(s.id));
+        map[s.group].appendChild(btn);
+      });
+    }
+    function show(id) {
+      current = id;
+      const meta = SCREENS.find((s) => s.id === id);
+      const tpl = document.getElementById("tpl-" + id);
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+      preview.appendChild(tpl.content.cloneNode(true));
+      fillProgress(preview);
+      document.getElementById("side-title").textContent = meta.label;
+      document.getElementById("side-id").textContent = "AS-IS · " + meta.id;
+      const notes = document.getElementById("side-notes");
+      notes.innerHTML = "";
+      meta.notes.forEach((n) => {
+        const li = document.createElement("li");
+        li.textContent = n;
+        notes.appendChild(li);
+      });
+      const idx = SCREENS.findIndex((s) => s.id === id);
+      document.getElementById("btn-prev").disabled = idx === 0;
+      document.getElementById("btn-next").disabled = idx === SCREENS.length - 1;
+      renderTabs();
+    }
+    document.getElementById("btn-prev").addEventListener("click", () => {
+      const i = SCREENS.findIndex((s) => s.id === current);
+      if (i > 0) show(SCREENS[i - 1].id);
+    });
+    document.getElementById("btn-next").addEventListener("click", () => {
+      const i = SCREENS.findIndex((s) => s.id === current);
+      if (i < SCREENS.length - 1) show(SCREENS[i + 1].id);
+    });
+    show(current);
+  </script>
+</body>
+</html>
