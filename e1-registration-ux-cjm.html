@@ -1,190 +1,137 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CJM v2 · рекомендованный путь</title>
+  <title>CJM 2 · Sprint 2 · 28 Sep – 2 Oct</title>
   <style>
     :root {
-      --page: #eef1f5;
-      --text: #111827;
-      --muted: #6b7280;
-      --faint: #9ca3af;
-      --line: #e5e7eb;
-      --line-strong: #d1d5db;
-      --yellow: #ffd600;
-      --yellow-btn: #ffe14a;
-      --yellow-bar: #f5c400;
-      --red: #ef4444;
-      --ok: #16a34a;
-      --warn: #d97706;
+      --page: #eef1f5; --text: #111827; --muted: #6b7280; --faint: #9ca3af;
+      --line: #e5e7eb; --line-strong: #d1d5db; --yellow: #ffd600; --yellow-btn: #ffe14a;
+      --yellow-bar: #f5c400; --ok: #16a34a; --warn: #d97706; --danger: #dc2626;
+      --cab: #0e1522; --cab-card: #151c2b; --cab-line: #243044; --cab-text: #f3f6fb; --cab-muted: #9aa6b8;
       --font: "Segoe UI", system-ui, -apple-system, sans-serif;
       --shadow: 0 8px 32px rgba(15, 23, 42, .08);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font); background: var(--page); color: var(--text); min-height: 100vh; }
+    body { margin: 0; font-family: var(--font); background: var(--page); color: var(--text); }
     .page { max-width: 1280px; margin: 0 auto; padding: 24px 18px 48px; }
     .back { display: inline-block; margin-bottom: 12px; color: #2563eb; text-decoration: none; font-size: .9rem; }
-    h1 { margin: 0 0 6px; font-size: 1.55rem; font-weight: 700; }
-    .lede { margin: 0 0 14px; color: var(--muted); max-width: 82ch; line-height: 1.45; font-size: .92rem; }
-    .banner {
-      background: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 10px;
-      padding: 10px 14px; color: #166534; font-size: .86rem; margin-bottom: 18px; line-height: 1.4;
-    }
-    .banner strong { color: #14532d; }
-    .group-label {
-      font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
-      color: var(--faint); margin: 12px 0 8px; font-weight: 650;
-    }
+    h1 { margin: 0 0 6px; font-size: 1.5rem; font-weight: 700; }
+    .lede { margin: 0 0 12px; color: var(--muted); max-width: 90ch; line-height: 1.45; font-size: .92rem; }
+    .banner { background: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 14px; color: #166534; font-size: .86rem; margin-bottom: 14px; line-height: 1.4; }
+    .warnb { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .group-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin: 12px 0 8px; font-weight: 650; }
     .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tab {
-      appearance: none; border: 1px solid var(--line-strong); background: #fff;
-      color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: .82rem; cursor: pointer;
-    }
-    .tab:hover { color: var(--text); }
+    .tab { appearance: none; border: 1px solid var(--line-strong); background: #fff; color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: .82rem; cursor: pointer; }
     .tab.active { background: var(--yellow); border-color: var(--yellow); color: #111; font-weight: 650; }
-    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; margin-top: 20px; align-items: start; }
+    .layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 22px; margin-top: 20px; align-items: start; }
     @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
     .side { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
     .side h3 { margin: 0 0 4px; font-size: 1.05rem; }
     .side .id { color: var(--faint); font-size: .78rem; margin-bottom: 12px; }
     .side hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
     .notes { list-style: none; padding: 0; margin: 0; }
-    .notes li {
-      background: #f8fafc; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
-      font-size: .82rem; color: var(--muted); line-height: 1.35;
-    }
+    .notes li { background: #f8fafc; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; font-size: .82rem; color: var(--muted); line-height: 1.35; }
     .nav-btns { display: flex; gap: 8px; }
-    .nav-btns button {
-      appearance: none; border-radius: 8px; padding: 9px 12px; font-size: .85rem;
-      cursor: pointer; font-weight: 650;
-    }
-    .nav-btns .prev { background: #fff; border: 1px solid var(--line-strong); color: var(--text); }
-    .nav-btns .next { background: var(--yellow); border: 1px solid var(--yellow); color: #111; }
+    .nav-btns button { appearance: none; border-radius: 8px; padding: 9px 12px; font-size: .85rem; cursor: pointer; font-weight: 650; }
+    .nav-btns .prev { background: #fff; border: 1px solid var(--line-strong); }
+    .nav-btns .next { background: var(--yellow); border: 1px solid var(--yellow); }
     .nav-btns button:disabled { opacity: .35; cursor: not-allowed; }
-
     .chrome { background: #fff; border: 1px solid var(--line-strong); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
-    .chrome-bar {
-      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-      background: #f4f5f7; border-bottom: 1px solid var(--line); font-size: .75rem; color: var(--muted);
-    }
+    .chrome-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f4f5f7; border-bottom: 1px solid var(--line); font-size: .75rem; color: var(--muted); }
     .dots { display: flex; gap: 5px; }
     .dots i { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; font-style: normal; display: block; }
-    .url { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; color: #374151; }
-
-    .auth-wrap { max-width: 520px; margin: 0 auto; padding: 44px 28px 36px; }
-    .auth-title { margin: 0 0 8px; font-size: 1.65rem; font-weight: 750; letter-spacing: -.02em; }
+    .url { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; }
+    .auth-wrap { max-width: 540px; margin: 0 auto; padding: 40px 28px 36px; }
+    .auth-title { margin: 0 0 8px; font-size: 1.6rem; font-weight: 750; }
     .auth-title .y { color: #eab308; }
-    .auth-sub { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.4; }
+    .auth-sub { margin: 0; color: var(--muted); font-size: .94rem; line-height: 1.4; }
     .progress { display: flex; gap: 8px; margin: 18px 0 20px; }
     .progress span { height: 4px; flex: 1; border-radius: 99px; background: #ececec; }
     .progress span.on { background: var(--yellow-bar); }
     .field { margin-bottom: 14px; }
     .field label { display: block; font-size: .82rem; color: #4b5563; margin-bottom: 6px; }
     .req { color: #ef4444; font-size: .78rem; }
-    .box { width: 100%; border: 1px solid #e5e7eb; background: #fff; border-radius: 10px; padding: 12px 14px; font-size: .95rem; }
+    .box { width: 100%; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: .95rem; background: #fff; }
     .box.ph { color: #9ca3af; }
     .box.focus { border-color: var(--yellow-bar); box-shadow: 0 0 0 1px var(--yellow-bar); }
     .sel { position: relative; }
     .sel::after { content: "▾"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: .8rem; }
-    .btn { appearance: none; border: none; border-radius: 10px; padding: 12px 18px; font-size: .95rem; font-weight: 650; text-align: center; cursor: default; }
+    .btn { appearance: none; border: none; border-radius: 10px; padding: 12px 18px; font-size: .95rem; font-weight: 650; text-align: center; }
     .btn.yellow { background: var(--yellow-btn); color: #1f2937; }
     .btn.ghost { background: #fff; border: 1px solid var(--line-strong); color: var(--text); }
     .btn.full { width: 100%; display: block; }
-    .foot { margin-top: 16px; text-align: center; color: var(--muted); font-size: .85rem; }
-    .check { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0 16px; font-size: .86rem; color: #4b5563; line-height: 1.4; }
+    .btn.disabled { opacity: .45; }
+    .check { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0 12px; font-size: .86rem; color: #4b5563; line-height: 1.4; }
     .check .sq { width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 4px; flex: none; margin-top: 2px; }
     .check .sq.on { background: var(--yellow); border-color: var(--yellow-bar); }
-    .check a { color: #ca8a04; text-decoration: none; font-weight: 600; }
-
+    .check a { color: #ca8a04; font-weight: 600; text-decoration: underline; }
     .alert { border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; font-size: .86rem; line-height: 1.4; }
     .alert.danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
     .alert.warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
     .alert.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
     .alert .t { font-weight: 700; margin-bottom: 4px; }
-
     .otp-boxes { display: flex; gap: 10px; margin: 10px 0 16px; }
-    .otp-boxes i {
-      width: 48px; height: 52px; border-radius: 10px; border: 1.5px solid var(--yellow-bar);
-      display: grid; place-items: center; font-style: normal; font-size: 1.2rem; font-weight: 650;
-    }
-    .otp-actions { display: flex; gap: 10px; }
-    .resend { margin-top: 10px; color: var(--muted); font-size: .85rem; }
+    .otp-boxes i { width: 48px; height: 52px; border-radius: 10px; border: 1.5px solid var(--yellow-bar); display: grid; place-items: center; font-style: normal; font-size: 1.2rem; font-weight: 650; }
+    .country-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .country-bar button { appearance: none; border: 1px solid var(--line-strong); background: #fff; border-radius: 8px; padding: 5px 9px; font-size: .75rem; cursor: pointer; }
+    .country-bar button.on { background: #111; color: #fff; border-color: #111; }
 
-    .cab { display: grid; grid-template-columns: 56px 1fr; min-height: 540px; background: #f7f8fa; }
-    .rail { background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 6px; }
-    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--yellow); display: grid; place-items: center; font-size: .72rem; font-weight: 800; margin-bottom: 8px; }
-    .rail .ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #9ca3af; }
-    .rail .ico.on { background: #fff8cc; color: #111; }
-    .cab-main { padding: 12px 16px 20px; }
-    .cab-top {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #fff; border: 1px solid var(--line); border-radius: 10px;
-      padding: 8px 12px; margin-bottom: 12px; font-size: .88rem; font-weight: 650;
-    }
-    .lang { font-weight: 500; color: var(--muted); font-size: .8rem; border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: #fff; }
-    .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
-    .card h2 { margin: 0 0 8px; font-size: 1.25rem; }
-    .card h3 { margin: 0 0 6px; font-size: 1.02rem; }
-    .card p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.45; }
-
+    .cab { display: grid; grid-template-columns: 56px 1fr; min-height: 560px; background: var(--cab); color: var(--cab-text); }
+    .rail { background: #0b1220; border-right: 1px solid var(--cab-line); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 6px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--yellow); color: #111; display: grid; place-items: center; font-size: .72rem; font-weight: 800; margin-bottom: 8px; }
+    .rail .ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #6b778c; }
+    .rail .ico.on { background: #1a2438; color: var(--yellow); }
+    .cab-main { padding: 14px 16px 20px; }
+    .cab-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 650; }
+    .pill { font-size: .7rem; font-weight: 700; letter-spacing: .04em; background: #243044; color: #f5c518; border-radius: 99px; padding: 3px 8px; }
+    .ccard { background: var(--cab-card); border: 1px solid var(--cab-line); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
+    .ccard h2 { margin: 0 0 8px; font-size: 1.25rem; }
+    .ccard h3 { margin: 0 0 6px; font-size: 1.02rem; }
+    .ccard p { margin: 0; color: var(--cab-muted); font-size: .86rem; line-height: 1.45; }
     .clist { display: grid; gap: 8px; margin-top: 12px; }
-    .citem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: .88rem; background: #fff; }
-    .citem.done { color: var(--ok); }
-    .citem .n { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d1d5db; flex: none; }
+    .citem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--cab-line); border-radius: 10px; font-size: .88rem; }
+    .citem.done { color: #34d399; }
+    .citem.wait { color: #fbbf24; }
+    .citem .n { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #3d4b63; flex: none; }
     .citem.done .n { background: #16a34a; border-color: #16a34a; }
-    .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .bar .pct { font-size: .78rem; color: var(--muted); }
-    .track { height: 6px; background: #f3f4f6; border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+    .track { height: 6px; background: #1a2438; border-radius: 99px; overflow: hidden; margin: 10px 0 4px; }
     .track i { display: block; height: 100%; background: var(--yellow-bar); }
-
-    .opt { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
-    .opt.on { border-color: var(--yellow-bar); background: #fffbeb; }
-    .opt .name { font-weight: 650; margin-bottom: 3px; }
-    .opt .desc { font-size: .8rem; color: var(--muted); }
-    .tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-left: 6px; }
-    .tag.a { background: #fee2e2; color: #991b1b; }
-    .tag.b { background: #ffedd5; color: #9a3412; }
-    .tag.c { background: #dbeafe; color: #1e40af; }
-    .tag.d { background: #dcfce7; color: #166534; }
-
-    .doc { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-    .doc .st { font-size: .75rem; font-weight: 700; color: var(--ok); }
-    .doc .wait { color: var(--warn); }
-
+    .doc { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid var(--cab-line); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+    .doc a { color: var(--yellow); font-weight: 600; text-decoration: underline; }
+    .st { font-size: .75rem; font-weight: 700; color: #34d399; }
+    .wait { font-size: .75rem; font-weight: 700; color: #fbbf24; }
+    .gate { background: #1a1520; border: 1px solid #5b4a1e; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; color: #fde68a; font-size: .84rem; line-height: 1.4; }
     .tpl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .tpl { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
-    .tpl-art { height: 64px; position: relative; }
-    .price { position: absolute; top: 8px; right: 8px; background: #fff; border-radius: 99px; font-size: .68rem; padding: 3px 7px; font-weight: 650; }
-    .tpl-body { padding: 10px 12px 12px; }
+    .tpl { border: 1px solid var(--cab-line); border-radius: 12px; overflow: hidden; background: #121a2b; }
+    .tpl-art { height: 64px; }
+    .tpl-body { padding: 10px 12px; }
     .tpl-body strong { display: block; font-size: .86rem; margin-bottom: 3px; }
-    .tpl-body span { font-size: .74rem; color: var(--muted); }
-    .art-green { background: #d9f0d7; }
-    .art-lilac { background: #e8d7f7; }
-    .art-blue { background: #d7eaf8; }
-    .sandbox { font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: #92400e; background: #fef3c7; border-radius: 99px; padding: 3px 8px; }
+    .tpl-body span { font-size: .74rem; color: var(--cab-muted); }
+    .art-green { background: #1d3a28; } .art-lilac { background: #3a2450; } .art-blue { background: #1c3550; }
+    .next-note { font-size: .75rem; color: var(--cab-muted); margin-top: 8px; }
   </style>
 </head>
 <body>
   <div class="page">
-    <a class="back" href="index.html">← Назад в Decision Hub</a>
-    <h1>CJM v2 · рекомендованный путь</h1>
+    <a class="back" href="index.html">← Decision Hub</a>
+    <h1>CJM 2 · Sprint 2 · 28 Sep – 2 Oct</h1>
     <p class="lede">
-      Email → OTP → Пароль + мини-ToS → сразу sandbox → онбординг в кабинете
-      (компания, Volume/ABCD, DPA, баланс) → live. Company не на регистрации.
+      Simplified registration with IP geofencing. Persist <strong>email + country + expected volume</strong> for every allowed country.
+      Terms of Service and DPA are separate links. Client type no longer blocks signup.
+      Before Create flow: country document pack signed, registration complete, balance funded (top-up UX → next sprint).
     </p>
-    <div class="banner">
-      <strong>Отличие от Молдир / текущего прода:</strong>
-      3 шага до продукта, Gmail ок, IP-гейт на входе, progressive profiling, checklist, маршрутизация Sales.
-      Юридический пакет E1 (ToS, DPA, sanctions) берём — разносим по этапам.
-    </div>
+    <div class="banner">Source pack: PUBLISH (18–20 Sep 2026). Document lists below are the files in that pack. Business guidance, not legal advice. Counsel confirms clickwrap vs client-deployed consent.</div>
+    <div class="banner warnb">Next backlog (not this sprint): Stripe top-up mechanics, full cabinet navigation after first-run, end-user SDK consent screens.</div>
 
-    <div class="group-label">Регистрация</div>
+    <div class="group-label">Demo country (changes the document pack)</div>
+    <div class="country-bar" id="country-bar"></div>
+
+    <div class="group-label">Registration</div>
     <div class="tabs" id="tabs-reg"></div>
-    <div class="group-label">Sandbox и онбординг</div>
-    <div class="tabs" id="tabs-onb"></div>
-    <div class="group-label">До live</div>
-    <div class="tabs" id="tabs-live"></div>
+    <div class="group-label">Sandbox</div>
+    <div class="tabs" id="tabs-cab"></div>
 
     <div class="layout">
       <div id="preview"></div>
@@ -192,12 +139,12 @@
         <h3 id="side-title">—</h3>
         <div class="id" id="side-id">—</div>
         <hr />
-        <div style="font-weight:650;margin-bottom:8px;font-size:.85rem;">CJM v2</div>
+        <div style="font-weight:650;margin-bottom:8px;font-size:.85rem;">Sprint 2 note</div>
         <ul class="notes" id="side-notes"></ul>
         <hr />
         <div class="nav-btns">
-          <button type="button" class="prev" id="btn-prev">Назад</button>
-          <button type="button" class="next" id="btn-next">Следующий экран</button>
+          <button type="button" class="prev" id="btn-prev">Back</button>
+          <button type="button" class="next" id="btn-next">Next screen</button>
         </div>
       </aside>
     </div>
@@ -207,12 +154,12 @@
     <div class="chrome">
       <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">https://cabinet.biometric.kz/auth/register</div></div>
       <div class="auth-wrap">
-        <h2 class="auth-title">Сервис недоступен в вашем регионе</h2>
-        <p class="auth-sub">Мы пока не обслуживаем организации из EU / UK / Швейцарии.</p>
-        <div class="progress" data-filled="0" data-total="3"></div>
-        <div class="alert danger"><div class="t">IP: Germany (DE)</div>Регистрация не открывается. Можно оставить email — напишем, когда появимся в регионе.</div>
-        <div class="field"><label>Email для waitlist</label><div class="box ph">name@company.com</div></div>
-        <div class="btn yellow full">Уведомить меня</div>
+        <h2 class="auth-title">Service not available in your region</h2>
+        <p class="auth-sub">IP geofencing runs before the form. No account is created.</p>
+        <div class="progress" data-filled="0" data-total="4"></div>
+        <div class="alert danger"><div class="t" id="deny-title">IP country blocked</div><span id="deny-body">USA, EEA, UK, Switzerland and sanctioned territories cannot start signup (PUBLISH onboarding map).</span></div>
+        <div class="field"><label>Waitlist email</label><div class="box ph">name@company.com</div></div>
+        <div class="btn yellow full">Notify me</div>
       </div>
     </div>
   </template>
@@ -220,24 +167,11 @@
   <template id="tpl-email">
     <div class="chrome">
       <div class="auth-wrap">
-        <h2 class="auth-title">Создать аккаунт в <span class="y">Biometric</span></h2>
-        <p class="auth-sub">Gmail и Outlook принимаем. Вход в шапке убран — меньше прыжков register ↔ login.</p>
-        <div class="progress" data-filled="1" data-total="3"></div>
+        <h2 class="auth-title">Create an account in <span class="y">Biometric</span></h2>
+        <p class="auth-sub">Work or personal mailbox. We store email on continue.</p>
+        <div class="progress" data-filled="1" data-total="4"></div>
         <div class="field"><label>Email</label><div class="box focus">founder@gmail.com</div></div>
-        <div class="btn yellow full">Продолжить</div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-hold">
-    <div class="chrome">
-      <div class="auth-wrap">
-        <h2 class="auth-title">Создать аккаунт в <span class="y">Biometric</span></h2>
-        <p class="auth-sub">Форма доступна. Live — после модерации.</p>
-        <div class="progress" data-filled="1" data-total="3"></div>
-        <div class="alert warn"><div class="t">Регистрация на модерации</div>Страна по IP: United States. Аккаунт создадим, live-транзакции — после проверки.</div>
-        <div class="field"><label>Email</label><div class="box focus">ops@acme.com</div></div>
-        <div class="btn yellow full">Продолжить</div>
+        <div class="btn yellow full">Continue</div>
       </div>
     </div>
   </template>
@@ -245,17 +179,31 @@
   <template id="tpl-otp">
     <div class="chrome">
       <div class="auth-wrap">
-        <h2 class="auth-title" style="font-size:1.45rem;">Подтверждение email</h2>
-        <p class="auth-sub">Код отправлен на <strong style="color:var(--text)">founder@gmail.com</strong>.</p>
-        <div class="progress" data-filled="2" data-total="3"></div>
-        <div class="alert info">Не видите письмо? Проверьте папки Спам и Промоакции.</div>
-        <div style="font-size:.82rem;color:#4b5563;margin-bottom:6px;">Код подтверждения</div>
+        <h2 class="auth-title" style="font-size:1.4rem;">Confirm email</h2>
+        <p class="auth-sub">Code sent to <strong>founder@gmail.com</strong>.</p>
+        <div class="progress" data-filled="2" data-total="4"></div>
+        <div class="alert info">Not in inbox? Check Spam and Promotions.</div>
         <div class="otp-boxes"><i>7</i><i>8</i><i>4</i><i>9</i></div>
-        <div class="otp-actions">
-          <div class="btn ghost">&lt; Назад</div>
-          <div class="btn yellow">Подтвердить</div>
-        </div>
-        <div class="resend">Отправить повторно через 37 сек</div>
+        <div style="display:flex;gap:10px;"><div class="btn ghost">&lt; Back</div><div class="btn yellow">Confirm</div></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-company">
+    <div class="chrome">
+      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">https://cabinet.biometric.kz/auth/register</div></div>
+      <div class="auth-wrap" style="padding-top:28px;">
+        <h2 class="auth-title" style="font-size:1.5rem;">Organisation</h2>
+        <p class="auth-sub">Country and expected volume are required for every allowed country. Saved with email for CRM / routing.</p>
+        <div class="progress" data-filled="3" data-total="4"></div>
+        <div class="field"><label>Company name <span class="req">(required)</span></label><div class="box">Acme KYC LLP</div></div>
+        <div class="field"><label>Client type <span class="req">(required)</span></label><div class="sel"><div class="box">Legal entity · Individual · Sole proprietor — all allowed</div></div></div>
+        <div class="field"><label>Industry <span class="req">(required)</span></label><div class="sel"><div class="box ph">Select industry</div></div></div>
+        <div class="field"><label>Tax ID / BIN</label><div class="box ph">If you have one</div></div>
+        <div class="field"><label>Country <span class="req">(required · all countries)</span></label><div class="sel"><div class="box" id="country-field">Kazakhstan</div></div></div>
+        <div class="field"><label>Expected monthly volume <span class="req">(required · all countries)</span></label><div class="sel"><div class="box">5,000 – 10,000 checks</div></div></div>
+        <div class="field"><label>Phone</label><div class="box ph">Optional</div></div>
+        <div class="btn yellow full">Continue</div>
       </div>
     </div>
   </template>
@@ -263,13 +211,14 @@
   <template id="tpl-password">
     <div class="chrome">
       <div class="auth-wrap">
-        <h2 class="auth-title" style="font-size:1.45rem;">Пароль</h2>
-        <p class="auth-sub">После этого сразу кабинет — без «Перейти ко входу».</p>
-        <div class="progress" data-filled="3" data-total="3"></div>
-        <div class="field"><label>Пароль</label><div class="box focus ph">Введите пароль</div></div>
-        <div class="field"><label>Повторите пароль</label><div class="box ph">Повторите пароль</div></div>
-        <div class="check"><div class="sq on"></div><div>Принимаю <a href="#">Terms of Service</a> и <a href="#">Privacy Policy</a>. Полный DPA — в кабинете.</div></div>
-        <div class="btn yellow full">Создать аккаунт</div>
+        <h2 class="auth-title" style="font-size:1.4rem;">Password</h2>
+        <p class="auth-sub">Separate links — not one combined document. Then straight into sandbox (no extra login).</p>
+        <div class="progress" data-filled="4" data-total="4"></div>
+        <div class="field"><label>Password</label><div class="box focus ph">Enter password</div></div>
+        <div class="field"><label>Confirm password</label><div class="box ph">Repeat password</div></div>
+        <div class="check"><div class="sq on"></div><div>I agree to the <a href="#">Terms of Service</a></div></div>
+        <div class="check"><div class="sq on"></div><div>I agree to the <a href="#">Data Processing Agreement (DPA)</a></div></div>
+        <div class="btn yellow full">Create account</div>
       </div>
     </div>
   </template>
@@ -283,121 +232,34 @@
           <div class="ico on">⌂</div>
           <div class="ico">▤</div>
           <div class="ico">☰</div>
+          <div class="ico">👛</div>
           <div class="ico">👤</div>
-          <div class="ico">◎</div>
-          <div class="ico">📁</div>
           <div class="ico">📄</div>
         </aside>
         <div class="cab-main">
-          <div class="cab-top"><span>Главная</span><span class="sandbox">SANDBOX</span><span class="lang">Русский ▾</span></div>
-          <div class="card">
-            <div class="bar"><h3 style="margin:0;">Завершите настройку</h3><span class="pct">1 / 5 · осталось 4 шага до live</span></div>
-            <div class="track"><i style="width:20%"></i></div>
+          <div class="cab-top"><span>Home</span><span class="pill">SANDBOX</span></div>
+          <div class="ccard">
+            <h3>Finish setup to unlock Create flow</h3>
+            <div class="track"><i style="width:40%"></i></div>
+            <p style="margin-top:6px;">2 / 5 · documents, then balance. Cabinet navigation after this first-run — next backlog.</p>
             <div class="clist">
-              <div class="citem done"><span class="n"></span>Аккаунт создан</div>
-              <div class="citem"><span class="n"></span>Данные компании</div>
-              <div class="citem"><span class="n"></span>Планируемый объём</div>
-              <div class="citem"><span class="n"></span>Документы (DPA)</div>
-              <div class="citem"><span class="n"></span>Пополнить баланс</div>
+              <div class="citem done"><span class="n"></span>Account created · email + country + volume saved</div>
+              <div class="citem done"><span class="n"></span>Organisation profile complete</div>
+              <div class="citem wait"><span class="n"></span>Sign country documents</div>
+              <div class="citem"><span class="n"></span>Add balance (top-up UX → next sprint; gate is this sprint)</div>
+              <div class="citem"><span class="n"></span>Create flow</div>
             </div>
           </div>
-          <div class="card">
-            <h2>Добро пожаловать в Личный Кабинет Biometric.Vision!</h2>
-            <p>Можно собирать флоу и смотреть продукт. Реальные транзакции откроются после онбординга.</p>
+          <div class="ccard">
+            <h2>Welcome to Biometric.Vision</h2>
+            <p>Sandbox is for orientation. Create flow stays locked until documents are signed, registration is complete, and balance is funded.</p>
           </div>
-          <div class="card">
-            <h3>Создайте первый флоу</h3>
-            <p style="margin-bottom:14px;">Флоу — интерфейс, к которому подключаются модули биометрии.</p>
-            <div class="btn yellow" style="display:inline-block;">+ Создать флоу</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-company">
-    <div class="chrome">
-      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">https://cabinet.biometric.kz/settings/company</div></div>
-      <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico">⌂</div><div class="ico on">👤</div></aside>
-        <div class="cab-main">
-          <div class="cab-top"><span>Настройки → Компания</span><span class="pct" style="font-weight:500;color:var(--muted);font-size:.8rem;">Шаг 2 из 5</span></div>
-          <div class="card">
-            <h2>Данные компании</h2>
-            <p style="margin-bottom:16px;">Те же поля, что сейчас на реге Молдир — после входа. Страна предзаполнена по IP.</p>
-            <div class="field"><label>Название компании <span class="req">(обязательно)</span></label><div class="box">Acme KYC LLP</div></div>
-            <div class="field"><label>Тип клиента <span class="req">(обязательно)</span></label><div class="box">Юридическое лицо</div></div>
-            <div class="field"><label>Сфера деятельности <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите сферу</div></div></div>
-            <div class="field"><label>БИН / Tax ID <span class="req">(обязательно)</span></label><div class="box ph">БИН</div></div>
-            <div class="field"><label>Страна <span class="req">(обязательно)</span></label><div class="box">Kazakhstan <span style="color:var(--faint);font-size:.8rem;">· по IP, можно изменить</span></div></div>
-            <div class="field"><label>Телефон</label><div class="box ph">необязательно</div></div>
-            <div class="btn yellow full">Сохранить и продолжить</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-volume">
-    <div class="chrome">
-      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">https://cabinet.biometric.kz/settings/volume</div></div>
-      <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico">⌂</div><div class="ico on">👤</div></aside>
-        <div class="cab-main">
-          <div class="cab-top"><span>Планируемый объём</span><span style="font-weight:500;color:var(--muted);font-size:.8rem;">Шаг 3 из 5 · ABCD</span></div>
-          <div class="card">
-            <h2>Сколько проверок в месяц?</h2>
-            <p style="margin-bottom:14px;">От выбора зависит маршрут: Sales + demo или self-serve.</p>
-            <div class="opt"><div class="name">До 500 <span class="tag d">D · self-serve</span></div><div class="desc">500 Free, без менеджера</div></div>
-            <div class="opt"><div class="name">500 – 5 000 <span class="tag c">C</span></div><div class="desc">Per-transaction · demo по запросу Sales</div></div>
-            <div class="opt on"><div class="name">5 000 – 10 000 <span class="tag b">B</span></div><div class="desc">Enterprise / per-tx · CRM + Book a demo</div></div>
-            <div class="opt"><div class="name">Более 10 000 <span class="tag a">A</span></div><div class="desc">Enterprise · приоритетный менеджер</div></div>
-            <div class="btn yellow full" style="margin-top:8px;">Продолжить</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-billing">
-    <div class="chrome">
-      <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico">⌂</div><div class="ico on">📄</div></aside>
-        <div class="cab-main">
-          <div class="cab-top"><span>Тариф</span><span class="sandbox">рекомендация по Volume B</span></div>
-          <div class="card">
-            <h2>Режим оплаты</h2>
-            <p style="margin-bottom:14px;">Volume задаёт ABCD для CRM. Billing — отдельно, с рекомендацией.</p>
-            <div class="opt"><div class="name">500 Free / Per-transaction</div><div class="desc">Для D и части C</div></div>
-            <div class="opt on"><div class="name">Enterprise</div><div class="desc">Рекомендуем для B и A</div></div>
-            <div class="btn yellow full" style="margin-top:8px;">Выбрать</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <template id="tpl-demo">
-    <div class="chrome">
-      <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico on">⌂</div></aside>
-        <div class="cab-main">
-          <div class="cab-top"><span>Главная</span><span class="tag b">B · MQL</span></div>
-          <div class="card">
-            <div class="bar"><h3 style="margin:0;">Завершите настройку</h3><span class="pct">3 / 5</span></div>
-            <div class="track"><i style="width:60%"></i></div>
-            <div class="clist">
-              <div class="citem done"><span class="n"></span>Аккаунт создан</div>
-              <div class="citem done"><span class="n"></span>Данные компании</div>
-              <div class="citem done"><span class="n"></span>Объём B · 5–10k</div>
-              <div class="citem"><span class="n"></span>Документы (DPA)</div>
-              <div class="citem"><span class="n"></span>Пополнить баланс</div>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Ваш менеджер — Samal Alibekova</h3>
-            <p style="margin-bottom:12px;">Ответит в течение 2 часов. A/B/C идут в CRM + Book a demo. D этот блок не видит.</p>
-            <div class="btn yellow" style="display:inline-block;">Забронировать демо</div>
+          <div class="ccard">
+            <h3>Create a flow</h3>
+            <p style="margin-bottom:12px;">Connect biometric modules in the order you need.</p>
+            <div class="btn yellow disabled" style="display:inline-block;">+ Create flow</div>
+            <div class="btn ghost" style="display:inline-block;margin-left:8px;background:transparent;color:var(--cab-text);border-color:#3d4b63;">Balance</div>
+            <p class="next-note">Primary path this sprint: Documents → Balance → Create flow. Rest of the menu: next backlog.</p>
           </div>
         </div>
       </div>
@@ -406,34 +268,56 @@
 
   <template id="tpl-docs">
     <div class="chrome">
+      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">cabinet · documents before Create flow</div></div>
       <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico on">📄</div></aside>
+        <aside class="rail"><div class="avatar">YF</div><div class="ico">⌂</div><div class="ico on">📄</div></aside>
         <div class="cab-main">
-          <div class="cab-top"><span>Перед запуском</span></div>
-          <div class="card">
-            <h2>Документы</h2>
-            <p style="margin-bottom:14px;">Для live нужны ToS (уже при реге) и полный DPA. Sanctions — автоматически по компании и стране. E1 Legal Молдир — основа, разнесён по этапам.</p>
-            <div class="doc"><div><strong>Terms of Service</strong><div style="font-size:.78rem;color:var(--muted);">Принято при регистрации</div></div><div class="st">Готово</div></div>
-            <div class="doc"><div><strong>DPA</strong><div style="font-size:.78rem;color:var(--muted);">Data Processing Agreement</div></div><div class="wait">Подписать</div></div>
-            <div class="doc"><div><strong>MSA / Order Form</strong><div style="font-size:.78rem;color:var(--muted);">Только A/B, на демо</div></div><div class="wait">Позже</div></div>
-            <div class="btn yellow full" style="margin-top:8px;">Подписать DPA</div>
+          <div class="cab-top"><span>Documents</span><span class="pill" id="docs-country">KZ</span></div>
+          <div class="ccard">
+            <h2>Sign before Create flow</h2>
+            <p id="docs-intro" style="margin-bottom:14px;">Up to 5 signing documents for this country. Opinions, checklists, tax annexes and internal procedures are not shown.</p>
+            <div id="docs-list"></div>
+            <div class="check" style="color:var(--cab-muted);margin-top:12px;"><div class="sq on"></div><div>I have opened and accept the documents listed for this country.</div></div>
+            <div class="btn yellow full">Accept and continue</div>
           </div>
         </div>
       </div>
     </div>
   </template>
 
-  <template id="tpl-topup">
+  <template id="tpl-gate">
+    <div class="chrome">
+      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">cabinet · Create flow blocked</div></div>
+      <div class="cab">
+        <aside class="rail"><div class="avatar">YF</div><div class="ico on">⌂</div></aside>
+        <div class="cab-main">
+          <div class="cab-top"><span>Create flow</span></div>
+          <div class="ccard">
+            <h2>Not available yet</h2>
+            <div class="gate">Create flow requires: (1) full registration in the cabinet, (2) country documents signed, (3) balance funded. Balance top-up screens are next sprint — the gate itself is this sprint.</div>
+            <div class="clist">
+              <div class="citem done"><span class="n"></span>Registration complete</div>
+              <div class="citem done"><span class="n"></span>Documents signed</div>
+              <div class="citem wait"><span class="n"></span>Balance &gt; 0</div>
+            </div>
+            <div class="btn yellow" style="display:inline-block;margin-top:14px;">Go to Balance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-balance">
     <div class="chrome">
       <div class="cab">
-        <aside class="rail"><div class="avatar">YF</div><div class="ico on">📄</div></aside>
+        <aside class="rail"><div class="avatar">YF</div><div class="ico on">👛</div></aside>
         <div class="cab-main">
-          <div class="cab-top"><span>Баланс</span></div>
-          <div class="card">
-            <div style="font-size:.7rem;color:var(--faint);letter-spacing:.04em;font-weight:700;">ТЕКУЩИЙ БАЛАНС</div>
+          <div class="cab-top"><span>Balance</span></div>
+          <div class="ccard">
+            <div style="font-size:.7rem;color:var(--cab-muted);letter-spacing:.04em;font-weight:700;">CURRENT BALANCE</div>
             <div style="font-size:1.8rem;font-weight:750;margin:8px 0 12px;">$0.00</div>
-            <p style="margin-bottom:14px;">Минимум $10 · Stripe Checkout · max $1 000 000. Live после пополнения и DPA.</p>
-            <div class="btn yellow" style="display:inline-block;">+ Пополнить</div>
+            <p style="margin-bottom:14px;">Visible CTA this sprint so the first-run path is obvious. Stripe / min amount / ledger changes are the next sprint.</p>
+            <div class="btn yellow" style="display:inline-block;">+ Top up</div>
           </div>
         </div>
       </div>
@@ -442,54 +326,139 @@
 
   <template id="tpl-templates">
     <div class="chrome">
-      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">dashboard · шаблоны · sandbox, live ещё закрыт</div></div>
-      <div style="background:#fff;padding:18px 20px 22px;">
-        <div class="bar"><h2 style="margin:0;font-size:1.2rem;">Выберите шаблон</h2><span class="sandbox">SANDBOX</span></div>
-        <p class="auth-sub" style="margin:6px 0 14px;">Тот же каталог, что сейчас у Молдир. Сборка флоу в sandbox можно до онбординга; списание — нет.</p>
-        <div class="tpl-grid">
-          <div class="tpl"><div class="tpl-art art-green"></div><div class="tpl-body"><strong>С нуля</strong><span>Полный контроль над технологиями.</span></div></div>
-          <div class="tpl"><div class="tpl-art art-lilac"><span class="price">$0.25</span></div><div class="tpl-body"><strong>Только Liveness</strong><span>Базовая проверка живости.</span></div></div>
-          <div class="tpl"><div class="tpl-art art-blue"><span class="price">$0.47 – $2.41</span></div><div class="tpl-body"><strong>Стандартный KYC</strong><span>Рекомендуется.</span></div></div>
+      <div class="chrome-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">templates · only after gates pass</div></div>
+      <div class="cab">
+        <aside class="rail"><div class="avatar">YF</div><div class="ico on">▤</div></aside>
+        <div class="cab-main">
+          <div class="cab-top"><span>Choose a template</span><span class="pill">UNLOCKED</span></div>
+          <div class="ccard">
+            <p style="margin-bottom:14px;">Same catalogue as production. Shown only after documents + registration + balance.</p>
+            <div class="tpl-grid">
+              <div class="tpl"><div class="tpl-art art-green"></div><div class="tpl-body"><strong>From scratch</strong><span>Full control of technologies.</span></div></div>
+              <div class="tpl"><div class="tpl-art art-lilac"></div><div class="tpl-body"><strong>Liveness only</strong><span>$0.25</span></div></div>
+              <div class="tpl"><div class="tpl-art art-blue"></div><div class="tpl-body"><strong>Standard KYC</strong><span>Recommended · $0.47–$2.41</span></div></div>
+            </div>
+            <p class="next-note">End-user Terms and Verification Notice stay in the GlobalDocs pack; they are not part of this 5-document org signing set except for Kazakhstan (no local folder).</p>
+          </div>
         </div>
       </div>
     </div>
   </template>
 
   <script>
+    /* Max 5 signing docs per country. From PUBLISH: no opinions, checklists, tax, breach, DSR, DPIA. */
+    const PACKS = {
+      KZ: { name: "Kazakhstan", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (GLB03)",
+        "Privacy Policy (GLB05)",
+        "End-User Verification Terms (GLB11)",
+        "Verification Privacy Notice (GLB13)"
+      ]},
+      KG: { name: "Kyrgyzstan", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (GLB03)",
+        "Privacy Notice (KGZ05)",
+        "Cross-border consent (KGZ07)",
+        "Client Notice (KGZ13)"
+      ]},
+      AZ: { name: "Azerbaijan", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (GLB03)",
+        "Privacy Notice (AZE05)",
+        "Consent form (AZE07)",
+        "Client Notice (AZE13)"
+      ]},
+      MX: { name: "Mexico", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (MEX03)",
+        "Aviso de Privacidad (MEX05)",
+        "Consent form (MEX07)",
+        "Client Notice (GLB31)"
+      ]},
+      CO: { name: "Colombia", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (COL03)",
+        "Privacy Notice (COL05)",
+        "Consent / autorización (COL07)",
+        "Client Notice (GLB25)"
+      ]},
+      BR: { name: "Brazil", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (BRZ03)",
+        "Privacy Notice (BRZ05)",
+        "Consent form (BRZ07)",
+        "Client Notice (GLB23)"
+      ]},
+      ID: { name: "Indonesia", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (IDN03)",
+        "Privacy Notice (IDN05)",
+        "Consent form (IDN07)",
+        "Indonesia language rider (GLB39)"
+      ]},
+      MY: { name: "Malaysia", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (MYS03)",
+        "Privacy Notice (MYS05)",
+        "Consent form (MYS07)",
+        "Client Notice (GLB29)"
+      ]},
+      NG: { name: "Nigeria", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (NGA01)",
+        "Data Policy (NGA05)",
+        "Consent form (NGA07)",
+        "Client Notice (GLB33)"
+      ]},
+      UG: { name: "Uganda", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (UGA01)",
+        "Data Policy (UGA05)",
+        "Consent form (UGA07)",
+        "Client Notice (GLB35)"
+      ]},
+      VN: { name: "Vietnam", policy: "allow", docs: [
+        "Terms of Service (GLB01)",
+        "DPA (GLB03)",
+        "Data Policy (VNM05)",
+        "Consent form (VNM07)",
+        "Client Notice (GLB37)"
+      ]},
+      US: { name: "United States", policy: "deny", docs: [] },
+      DE: { name: "Germany (EEA)", policy: "deny", docs: [] }
+    };
+
     const SCREENS = [
-      { id: "deny", group: "Registration", label: "0. IP deny",
-        notes: ["EU/UK/CH — мягкий блок до формы", "Waitlist, аккаунт не создаётся", "У Молдир страна выбирается вручную на шаге Company"] },
+      { id: "deny", group: "Registration", label: "0. IP geofence",
+        notes: ["Runs before the form", "USA / EEA / UK / CH / sanctions → no account", "Waitlist only"] },
       { id: "email", group: "Registration", label: "1. Email",
-        notes: ["Прогресс 1 из 3, не 4", "Gmail/Outlook ок", "«Войти» нет в шапке", "Company ещё нет"] },
-      { id: "hold", group: "Registration", label: "1b. Hold",
-        notes: ["Форма открыта", "Баннер модерации", "Live позже"] },
+        notes: ["Simplified signup", "Email persisted", "No company yet"] },
       { id: "otp", group: "Registration", label: "2. OTP",
-        notes: ["Подсказка Спам / Промоакции", "Resend с таймером 45 сек"] },
-      { id: "password", group: "Registration", label: "3. Пароль + ToS",
-        notes: ["Мини-ToS + Privacy", "Полный DPA не здесь", "CTA создаёт сессию в кабинет"] },
-      { id: "home", group: "Onboarding", label: "4. Sandbox",
-        notes: ["Сразу кабинет, без повторного логина", "Checklist 1/5", "Флоу можно собирать", "Live закрыт"] },
-      { id: "company", group: "Onboarding", label: "5. Компания",
-        notes: ["Те же поля, что у Молдир", "После входа, не на реге", "Страна = IP-prefill"] },
-      { id: "volume", group: "Onboarding", label: "6. Volume / ABCD",
-        notes: ["4 варианта", "B выбран → CRM + demo", "D → self-serve"] },
-      { id: "billing", group: "Onboarding", label: "7. Billing",
-        notes: ["Отдельно от Volume", "Рекомендация по ABCD"] },
-      { id: "demo", group: "Live", label: "8. Demo A/B/C",
-        notes: ["Менеджер + Book a demo", "MQL = онбординг компании + volume", "D этот экран не видит"] },
-      { id: "docs", group: "Live", label: "9. DPA",
-        notes: ["ToS уже принят", "DPA здесь", "MSA на демо для A/B"] },
-      { id: "topup", group: "Live", label: "10. Пополнение",
-        notes: ["Stripe · min $10", "Гейт перед live"] },
-      { id: "templates", group: "Live", label: "11. Шаблоны",
-        notes: ["Тот же каталог кабинета", "Sandbox: собрать можно, списать нельзя"] },
+        notes: ["Spam hint", "4-digit code"] },
+      { id: "company", group: "Registration", label: "3. Org + volume",
+        notes: ["Volume required for every country", "Client type: all values allowed", "Country required", "Persist email + country + volume"] },
+      { id: "password", group: "Registration", label: "4. Password + links",
+        notes: ["ToS = own link", "DPA = own link", "Then sandbox session, no extra login"] },
+      { id: "home", group: "Cabinet", label: "5. Sandbox home",
+        notes: ["Checklist first-run", "Create flow locked", "Balance button visible", "Full nav → next backlog"] },
+      { id: "docs", group: "Cabinet", label: "6. Country docs",
+        notes: ["Max 5 documents per country", "ToS + DPA + privacy + consent/notice", "No opinions, tax, checklists"] },
+      { id: "gate", group: "Cabinet", label: "7. Create flow gate",
+        notes: ["Registration + docs + balance", "Top-up UX next sprint"] },
+      { id: "balance", group: "Cabinet", label: "8. Balance CTA",
+        notes: ["Path is visible now", "Stripe / ledger next sprint"] },
+      { id: "templates", group: "Cabinet", label: "9. Templates",
+        notes: ["Same catalogue as production", "Only after gates pass"] },
     ];
+
     let current = "email";
+    let country = "KZ";
 
     function fillProgress(root) {
       root.querySelectorAll(".progress").forEach((el) => {
         const filled = Number(el.dataset.filled || 0);
-        const total = Number(el.dataset.total || 3);
+        const total = Number(el.dataset.total || 4);
         el.innerHTML = "";
         for (let i = 0; i < total; i++) {
           const s = document.createElement("span");
@@ -498,11 +467,44 @@
         }
       });
     }
+    function renderCountryBar() {
+      const bar = document.getElementById("country-bar");
+      bar.innerHTML = "";
+      Object.keys(PACKS).forEach((code) => {
+        const p = PACKS[code];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = code === country ? "on" : "";
+        b.textContent = code + (p.policy === "deny" ? " · deny" : "");
+        b.addEventListener("click", () => {
+          country = code;
+          if (p.policy === "deny") current = "deny";
+          renderCountryBar();
+          show(current);
+        });
+        bar.appendChild(b);
+      });
+    }
+    function renderDocs(root) {
+      const pack = PACKS[country];
+      const list = root.querySelector("#docs-list");
+      const intro = root.querySelector("#docs-intro");
+      const tag = root.querySelector("#docs-country");
+      if (!list) return;
+      tag.textContent = country + " · " + pack.name + " · " + (pack.docs.length) + "/5";
+      intro.textContent = "Signing set for " + pack.name + ": " + pack.docs.length + " of max 5. Legal opinions, checklists, tax annexes, breach/DSR playbooks are excluded.";
+      list.innerHTML = "";
+      pack.docs.forEach((name) => {
+        const row = document.createElement("div");
+        row.className = "doc";
+        row.innerHTML = "<div><a href='#'>" + name + "</a><div style='font-size:.75rem;color:var(--cab-muted);margin-top:3px;'>Open · versioned clickwrap</div></div><div class='wait'>Sign</div>";
+        list.appendChild(row);
+      });
+    }
     function renderTabs() {
       const map = {
         Registration: document.getElementById("tabs-reg"),
-        Onboarding: document.getElementById("tabs-onb"),
-        Live: document.getElementById("tabs-live"),
+        Cabinet: document.getElementById("tabs-cab"),
       };
       Object.values(map).forEach((el) => (el.innerHTML = ""));
       SCREENS.forEach((s) => {
@@ -522,8 +524,11 @@
       preview.innerHTML = "";
       preview.appendChild(tpl.content.cloneNode(true));
       fillProgress(preview);
+      const cf = preview.querySelector("#country-field");
+      if (cf) cf.textContent = PACKS[country].name + (PACKS[country].policy === "deny" ? " · blocked" : "");
+      renderDocs(preview);
       document.getElementById("side-title").textContent = meta.label;
-      document.getElementById("side-id").textContent = "CJM v2 · " + meta.id;
+      document.getElementById("side-id").textContent = "CJM 2 · Sprint 2 · " + country + " · " + meta.id;
       const notes = document.getElementById("side-notes");
       notes.innerHTML = "";
       meta.notes.forEach((n) => {
@@ -544,6 +549,7 @@
       const i = SCREENS.findIndex((s) => s.id === current);
       if (i < SCREENS.length - 1) show(SCREENS[i + 1].id);
     });
+    renderCountryBar();
     show(current);
   </script>
 </body>

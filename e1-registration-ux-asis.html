@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Молдир · текущее</title>
+  <title>CJM 1 · current production</title>
   <style>
     :root {
       --page: #eef1f5;
@@ -242,20 +242,20 @@
 </head>
 <body>
   <div class="page">
-    <a class="back" href="index.html">← Назад в Decision Hub</a>
-    <h1>Молдир · текущее</h1>
+    <a class="back" href="index.html">← Decision Hub</a>
+    <h1>CJM 1 · current production</h1>
     <p class="lede">
-      Существующие шаги флоу по скринам <strong>cabinet.biometric.kz</strong>:
-      Email → OTP → Компания (в регистрации) → Главная → Шаблоны → Баланс.
+      Live cabinet screens (as of 22–25 Sep 2026):
+      Email → OTP → Company (on signup, including volume) → Home → Templates → Balance.
     </p>
     <div class="banner">
-      <strong>Это линия Молдир / текущий прод.</strong>
-      Не CJM v2: company и объём на реге, sandbox нет, после входа сразу «создать флоу».
+      Baseline for Sprint 2. CJM 2 keeps volume on signup, stops blocking client types,
+      adds IP geofence, separate ToS/DPA links, country document pack, and a Create flow gate.
     </div>
 
-    <div class="group-label">Регистрация</div>
+    <div class="group-label">Registration</div>
     <div class="tabs" id="tabs-reg"></div>
-    <div class="group-label">Кабинет</div>
+    <div class="group-label">Cabinet</div>
     <div class="tabs" id="tabs-cab"></div>
 
     <div class="layout">
@@ -264,12 +264,12 @@
         <h3 id="side-title">—</h3>
         <div class="id" id="side-id">—</div>
         <hr />
-        <div style="font-weight:650;margin-bottom:8px;font-size:.85rem;">Что на экране</div>
+        <div style="font-weight:650;margin-bottom:8px;font-size:.85rem;">On this screen</div>
         <ul class="notes" id="side-notes"></ul>
         <hr />
         <div class="nav-btns">
-          <button type="button" class="prev" id="btn-prev">Назад</button>
-          <button type="button" class="next" id="btn-next">Следующий экран</button>
+          <button type="button" class="prev" id="btn-prev">Back</button>
+          <button type="button" class="next" id="btn-next">Next screen</button>
         </div>
       </aside>
     </div>
@@ -279,15 +279,15 @@
     <div class="chrome">
       <div class="widget">
         <div class="auth-wrap">
-          <h2 class="auth-title">Регистрация в <span class="y">Biometric</span></h2>
-          <p class="auth-sub">Введите корпоративный email для начала регистрации.</p>
+          <h2 class="auth-title">Sign up to <span class="y">Biometric</span></h2>
+          <p class="auth-sub">Enter your work email to start registration.</p>
           <div class="progress" data-filled="1" data-total="4"></div>
           <div class="field">
-            <label>Рабочий email</label>
+            <label>Work email</label>
             <div class="box focus ph">name@company.com</div>
           </div>
-          <div class="btn yellow full">Продолжить</div>
-          <p class="foot">Уже есть аккаунт? <a href="#">Войти</a></p>
+          <div class="btn yellow full">Continue</div>
+          <p class="foot">Already have an account? <a href="#">Sign in</a></p>
         </div>
       </div>
     </div>
@@ -297,21 +297,21 @@
     <div class="chrome">
       <div class="otp-page">
         <div class="otp-form">
-          <h2 class="auth-title" style="font-size:1.45rem;">Подтверждение email</h2>
-          <p class="auth-sub">Введите код, отправленный на вашу почту.</p>
+          <h2 class="auth-title" style="font-size:1.45rem;">Confirm email</h2>
+          <p class="auth-sub">Enter the code sent to your inbox.</p>
           <div class="progress" data-filled="2" data-total="4"></div>
           <p class="auth-sub" style="margin-bottom:14px;line-height:1.45;">
-            Код подтверждения отправлен на <strong style="color:var(--text)">kilimay675@jobsai.com</strong>.<br />
-            Введите его ниже для продолжения.
+            Verification code sent to <strong style="color:var(--text)">kilimay675@jobsai.com</strong>.<br />
+            Enter it below to continue.
           </p>
-          <div style="font-size:.82rem;color:#4b5563;margin-bottom:6px;">Код подтверждения</div>
+          <div style="font-size:.82rem;color:#4b5563;margin-bottom:6px;">Verification code</div>
           <div class="otp-boxes"><i>7</i><i>8</i><i>4</i><i>9</i></div>
           <div class="otp-actions">
-            <div class="btn ghost">&lt; Назад</div>
-            <div class="btn yellow">Подтвердить</div>
+            <div class="btn ghost">&lt; Back</div>
+            <div class="btn yellow">Confirm</div>
           </div>
-          <div class="resend">Отправить код повторно</div>
-          <p class="foot" style="text-align:left;margin-top:18px;">Уже есть аккаунт? <a href="#">Войти</a></p>
+          <div class="resend">Resend code</div>
+          <p class="foot" style="text-align:left;margin-top:18px;">Already have an account? <a href="#">Sign in</a></p>
         </div>
         <div class="otp-preview">
           <div class="console">
@@ -349,22 +349,22 @@
       </div>
       <div class="widget">
         <div class="auth-wrap" style="padding-top:28px;">
-          <h2 class="auth-title" style="font-size:1.7rem;">Данные компании</h2>
-          <p class="auth-sub">Заполните данные организации.</p>
+          <h2 class="auth-title" style="font-size:1.7rem;">Company data</h2>
+          <p class="auth-sub">Fill in organisation details. Volume is already on this step in production.</p>
           <div class="progress" data-filled="3" data-total="4"></div>
-          <div class="field"><label>Название компании <span class="req">(обязательно)</span></label><div class="box">Biometric</div></div>
-          <div class="field"><label>Тип клиента <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите тип клиента</div></div></div>
-          <div class="field"><label>Сфера деятельности <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите сферу</div></div></div>
-          <div class="field"><label>БИН организации <span class="req">(обязательно)</span></label><div class="box ph">БИН</div></div>
-          <div class="field"><label>Страна <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите страну</div></div></div>
-          <div class="field"><label>Планируемый объём транзакций <span class="req">(обязательно)</span></label><div class="sel"><div class="box ph">Выберите объём</div></div></div>
-          <div class="field"><label>Телефон <span class="opt">(необязательно)</span></label><div class="box">&nbsp;</div></div>
-          <p class="hint">Чтобы продолжить, заполните все обязательные поля, выберите разрешённую страну и примите все обязательные документы.</p>
+          <div class="field"><label>Company name <span class="req">(required)</span></label><div class="box">Biometric</div></div>
+          <div class="field"><label>Client type <span class="req">(required)</span></label><div class="sel"><div class="box ph">Select client type · legal entity only in production</div></div></div>
+          <div class="field"><label>Industry <span class="req">(required)</span></label><div class="sel"><div class="box ph">Select industry</div></div></div>
+          <div class="field"><label>Company BIN <span class="req">(required)</span></label><div class="box ph">BIN</div></div>
+          <div class="field"><label>Country <span class="req">(required)</span></label><div class="sel"><div class="box ph">Select country</div></div></div>
+          <div class="field"><label>Expected transaction volume <span class="req">(required)</span></label><div class="sel"><div class="box ph">Select volume</div></div></div>
+          <div class="field"><label>Phone <span class="opt">(optional)</span></label><div class="box">&nbsp;</div></div>
+          <p class="hint">To continue, fill all required fields, choose an allowed country and accept required documents.</p>
           <div style="display:flex;gap:10px;">
-            <div class="btn ghost">&lt; Назад</div>
-            <div class="btn yellow" style="flex:1;">Продолжить</div>
+            <div class="btn ghost">&lt; Back</div>
+            <div class="btn yellow" style="flex:1;">Continue</div>
           </div>
-          <p class="foot">Уже есть аккаунт? <a href="#">Войти</a></p>
+          <p class="foot">Already have an account? <a href="#">Sign in</a></p>
         </div>
       </div>
     </div>
@@ -389,15 +389,15 @@
           <div class="ico">📄</div>
         </aside>
         <div class="cab-main">
-          <div class="cab-top"><span>Главная</span><span class="lang">Русский ▾</span></div>
+          <div class="cab-top"><span>Home</span><span class="lang">English ▾</span></div>
           <div class="card">
-            <h2>Добро пожаловать в Личный Кабинет Biometric.Vision!</h2>
-            <p>Автоматизируем бизнес-процессы и предотвращаем цифровое мошенничество при помощи биометрии и искусственного интеллекта с 2017 года. Сокращайте издержки, улучшайте пользовательский опыт и избавьтесь от рутины вместе с продуктами от Biometric.Vision. Быстро, просто, безопасно.</p>
+            <h2>Welcome to Biometric.Vision Cabinet</h2>
+            <p>We automate business processes and prevent digital fraud with biometrics and AI since 2017.</p>
           </div>
           <div class="card">
-            <h3>Для работы с нашей системой необходимо создать флоу</h3>
-            <p style="margin-bottom:14px;">Флоу — это интерфейс, к которому вы подключаете модули с технологиями биометрии в нужной вам последовательности.</p>
-            <div class="btn yellow" style="display:inline-block;">+ Создать флоу</div>
+            <h3>Create a flow to start using the system</h3>
+            <p style="margin-bottom:14px;">A flow is the interface where you connect biometric modules in the order you need.</p>
+            <div class="btn yellow" style="display:inline-block;">+ Create flow</div>
           </div>
         </div>
       </div>
@@ -408,65 +408,65 @@
     <div class="chrome">
       <div class="chrome-bar">
         <div class="dots"><i></i><i></i><i></i></div>
-        <div class="url">https://cabinet.biometric.kz/dashboard · модалка шаблонов</div>
+        <div class="url">https://cabinet.biometric.kz/dashboard · template modal</div>
       </div>
       <div class="modal-back">
         <div class="modal">
           <div class="modal-head">
             <div>
-              <h2>Выберите шаблон</h2>
-              <p class="auth-sub" style="margin-top:4px;">Начните с шаблона или создайте процесс с нуля</p>
+              <h2>Choose a template</h2>
+              <p class="auth-sub" style="margin-top:4px;">Start from a template or create a process from scratch</p>
             </div>
             <div class="x">✕</div>
           </div>
-          <div class="search">⌕  Поиск шаблонов...</div>
+          <div class="search">⌕  Search templates...</div>
           <div class="chips">
-            <span class="chip on">Все отрасли</span>
-            <span class="chip">Финтех</span>
-            <span class="chip">Банкинг</span>
-            <span class="chip">Крипто и Web3</span>
-            <span class="chip">Кредитование и BNPL</span>
-            <span class="chip">Страхование</span>
-            <span class="chip">Здравоохранение</span>
-            <span class="chip">Электронная коммерция</span>
-            <span class="chip">Маркетплейс</span>
+            <span class="chip on">All industries</span>
+            <span class="chip">Fintech</span>
+            <span class="chip">Banking</span>
+            <span class="chip">Crypto & Web3</span>
+            <span class="chip">Lending & BNPL</span>
+            <span class="chip">Insurance</span>
+            <span class="chip">Healthcare</span>
+            <span class="chip">E-commerce</span>
+            <span class="chip">Marketplace</span>
             <span class="chip">iGaming</span>
-            <span class="chip">Телеком</span>
-            <span class="chip">Госсектор</span>
-            <span class="chip">Образование</span>
+            <span class="chip">Telecom</span>
+            <span class="chip">Public sector</span>
+            <span class="chip">Education</span>
           </div>
-          <div class="sec">С НУЛЯ</div>
+          <div class="sec">FROM SCRATCH</div>
           <div class="tpl-grid" style="margin-bottom:16px;">
             <div class="tpl">
               <div class="tpl-art art-green"></div>
-              <div class="tpl-body"><strong>С нуля</strong><span>Создайте процесс с нуля с полным контролем над технологиями.</span></div>
+              <div class="tpl-body"><strong>From scratch</strong><span>Create a process with full control of technologies.</span></div>
             </div>
           </div>
-          <div class="sec">ВЕРИФИКАЦИЯ ЛИЧНОСТИ</div>
+          <div class="sec">IDENTITY VERIFICATION</div>
           <div class="tpl-grid">
             <div class="tpl">
               <div class="tpl-art art-lilac"><span class="price">$0.25</span><div class="icons"><b>◎</b></div></div>
-              <div class="tpl-body"><strong>Только Liveness</strong><span>Базовая проверка живости.</span></div>
+              <div class="tpl-body"><strong>Liveness only</strong><span>Basic liveness check.</span></div>
             </div>
             <div class="tpl">
-              <div class="tpl-art art-blue"><span class="badge-rec">РЕКОМЕНДУЕТСЯ</span><span class="price">$0.47 – $2.41</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
-              <div class="tpl-body"><strong>Стандартный KYC</strong><span>Стандартная верификация с liveness, распознаванием…</span></div>
+              <div class="tpl-art art-blue"><span class="badge-rec">RECOMMENDED</span><span class="price">$0.47 – $2.41</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
+              <div class="tpl-body"><strong>Standard KYC</strong><span>Standard verification with liveness, OCR…</span></div>
             </div>
             <div class="tpl">
               <div class="tpl-art art-blue"><span class="price">$0.57 – $2.41</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
-              <div class="tpl-body"><strong>Стандартный KYC + IP</strong><span>Стандартный KYC с дополнительной проверкой IP…</span></div>
+              <div class="tpl-body"><strong>Standard KYC + IP</strong><span>Standard KYC with extra IP check…</span></div>
             </div>
             <div class="tpl">
               <div class="tpl-art art-peach"><span class="price">$0.47 – $1.62</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
-              <div class="tpl-body"><strong>Цифровой KYC</strong><span>Верификация в цифровой среде.</span></div>
+              <div class="tpl-body"><strong>Digital KYC</strong><span>Verification in a digital channel.</span></div>
             </div>
             <div class="tpl">
               <div class="tpl-art art-orange"><span class="price">$0.57 – $1.62</span><div class="icons"><b>◎</b><b>▤</b><b>▣</b><b>🌐</b><b>+3</b></div></div>
-              <div class="tpl-body"><strong>Цифровой KYC + IP</strong><span>Цифровой KYC с дополнительной проверкой IP.</span></div>
+              <div class="tpl-body"><strong>Digital KYC + IP</strong><span>Digital KYC with extra IP check.</span></div>
             </div>
             <div class="tpl">
               <div class="tpl-art art-violet"><span class="price">$0.57 – $2.23</span><div class="icons"><b>◎</b><b>▤</b><b>📍</b><b>▣</b><b>+5</b></div></div>
-              <div class="tpl-body"><strong>KYC + адрес</strong><span>KYC с проверкой адреса.</span></div>
+              <div class="tpl-body"><strong>KYC + address</strong><span>KYC with address check.</span></div>
             </div>
           </div>
         </div>
@@ -478,7 +478,7 @@
     <div class="chrome">
       <div class="chrome-bar">
         <div class="dots"><i></i><i></i><i></i></div>
-        <div class="url">https://cabinet.biometric.kz · Баланс</div>
+        <div class="url">https://cabinet.biometric.kz · Balance</div>
       </div>
       <div class="cab">
         <aside class="rail">
@@ -494,14 +494,14 @@
         </aside>
         <div class="cab-main" style="padding:0;background:#fff;">
           <div class="bal-page">
-            <h2>Баланс</h2>
+            <h2>Balance</h2>
             <div class="bal-card">
               <div class="wallet">👛</div>
-              <div class="lab">ТЕКУЩИЙ БАЛАНС</div>
+              <div class="lab">CURRENT BALANCE</div>
               <div class="amt">$181.32</div>
-              <div class="btn yellow" style="display:inline-block;padding:8px 14px;font-size:.85rem;">+ Пополнить</div>
+              <div class="btn yellow" style="display:inline-block;padding:8px 14px;font-size:.85rem;">+ Top up</div>
             </div>
-            <div class="hist">История операций</div>
+            <div class="hist">Transaction history</div>
           </div>
         </div>
       </div>
@@ -511,17 +511,17 @@
   <script>
     const SCREENS = [
       { id: "email", group: "Registration", label: "1. Email",
-        notes: ["Корпоративный / рабочий email", "Прогресс 1 из 4", "CTA «Продолжить»", "Ссылка «Войти» под формой"] },
+        notes: ["Work email", "Progress 1 of 4", "Continue", "Sign in under the form"] },
       { id: "otp", group: "Registration", label: "2. OTP",
-        notes: ["4-значный код", "Прогресс 2 из 4", "Resend без таймера на скрине", "Справа — превью консоли", "Снова «Войти»"] },
-      { id: "company", group: "Registration", label: "3. Компания",
-        notes: ["URL /auth/register", "Прогресс 3 из 4", "6 обязательных полей + телефон", "Страна и объём — на этом шаге", "Документы упомянуты в хинте, чекбоксов на скрине нет"] },
-      { id: "home", group: "Cabinet", label: "4. Главная",
-        notes: ["После входа — empty state", "Нет чеклиста онбординга", "Единственный CTA: создать флоу"] },
-      { id: "templates", group: "Cabinet", label: "5. Шаблоны",
-        notes: ["Модалка поверх кабинета", "Цены на карточке", "«Стандартный KYC» — рекомендуется", "Отраслевые фильтры"] },
-      { id: "balance", group: "Cabinet", label: "6. Баланс",
-        notes: ["Текущий баланс $181.32", "CTA «Пополнить»", "История операций пустая на скрине"] },
+        notes: ["4-digit code", "Progress 2 of 4", "Resend with no timer on the screenshot", "Product preview on the right"] },
+      { id: "company", group: "Registration", label: "3. Company",
+        notes: ["/auth/register", "Progress 3 of 4", "6 required fields + phone", "Country and volume already here", "Legal entity only in production"] },
+      { id: "home", group: "Cabinet", label: "4. Home",
+        notes: ["Empty state after login", "No onboarding checklist", "Only CTA: Create flow"] },
+      { id: "templates", group: "Cabinet", label: "5. Templates",
+        notes: ["Modal over cabinet", "Prices on cards", "Standard KYC recommended"] },
+      { id: "balance", group: "Cabinet", label: "6. Balance",
+        notes: ["Balance $181.32", "Top up", "Empty history on the screenshot"] },
     ];
     let current = "email";
 
@@ -561,7 +561,7 @@
       preview.appendChild(tpl.content.cloneNode(true));
       fillProgress(preview);
       document.getElementById("side-title").textContent = meta.label;
-      document.getElementById("side-id").textContent = "Молдир · текущее · " + meta.id;
+      document.getElementById("side-id").textContent = "CJM 1 · " + meta.id;
       const notes = document.getElementById("side-notes");
       notes.innerHTML = "";
       meta.notes.forEach((n) => {

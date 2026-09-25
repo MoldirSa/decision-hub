@@ -6,3 +6,6 @@ Transaction model/
 *.png
 .DS_Store
 Thumbs.db
+
+.vercel
+docs/publish-pack/

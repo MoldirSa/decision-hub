@@ -2136,7 +2136,7 @@ class App{
       pendingNewHyp: false,
       meeting: false,
       customTab: 'kz',
-      journeyVersion: 'moldir'
+      journeyVersion: 'cjm2'
     };
     this.customDiagrams = {};
     CUSTOM_DIAGRAM_TABS.forEach(t=>{
@@ -2225,22 +2225,22 @@ class App{
       case 'overview':    main.innerHTML = renderOverview(this); break;
       case 'hypotheses':  main.innerHTML = renderHypotheses(this); break;
       case 'e1-ux': {
-        const ver = this.state.journeyVersion || 'moldir';
+        const ver = this.state.journeyVersion || 'cjm2';
         const map = {
-          moldir: { src: 'e1-registration-ux-asis.html', bg: '#eef1f5', caption: 'Молдир · текущее · прод по скринам' },
-          cjm:    { src: 'e1-registration-ux-cjm.html',  bg: '#eef1f5', caption: 'CJM v2 · рекомендованный путь' },
-          legal:  { src: 'e1-registration-ux.html',      bg: '#0b1220', caption: 'E1 Legal · эпик (без изменений)' }
+          cjm1:  { src: 'e1-registration-ux-asis.html', bg: '#eef1f5', caption: 'CJM 1 · current production' },
+          cjm2:  { src: 'e1-registration-ux-cjm.html',  bg: '#eef1f5', caption: 'CJM 2 · Sprint 2 · 28 Sep – 2 Oct' },
+          legal: { src: 'e1-registration-ux.html',      bg: '#0b1220', caption: 'E1 Legal pack' }
         };
-        const cfg = map[ver] || map.moldir;
+        const cfg = map[ver] || map.cjm2;
         main.innerHTML =
           '<div style="display:flex;flex-direction:column;height:calc(100vh - 64px);padding:0;margin:0;">' +
             '<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg-elevated);">' +
               '<div><strong>User journey</strong> <span class="muted">' + cfg.caption + '</span></div>' +
               '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                '<button type="button" class="btn-secondary' + (ver === 'moldir' ? ' active' : '') + '" data-journey="moldir">Молдир — текущее</button>' +
-                '<button type="button" class="btn-secondary' + (ver === 'cjm' ? ' active' : '') + '" data-journey="cjm">CJM v2</button>' +
-                '<button type="button" class="btn-secondary' + (ver === 'legal' ? ' active' : '') + '" data-journey="legal">E1 Legal</button>' +
-                '<a class="btn-secondary" href="' + cfg.src + '" target="_blank" rel="noopener">Открыть отдельно ↗</a>' +
+                '<button type="button" class="btn-secondary' + (ver === 'cjm1' ? ' active' : '') + '" data-journey="cjm1">CJM 1 · current</button>' +
+                '<button type="button" class="btn-secondary' + (ver === 'cjm2' ? ' active' : '') + '" data-journey="cjm2">CJM 2 · Sprint 2 · 28 Sep–2 Oct</button>' +
+                '<a class="btn-secondary" href="cjm2-sprint2-backlog.html" target="_blank" rel="noopener">Story ↗</a>' +
+                '<a class="btn-secondary" href="' + cfg.src + '" target="_blank" rel="noopener">Open ↗</a>' +
               '</div>' +
             '</div>' +
             '<iframe src="' + cfg.src + '" title="User journey" style="flex:1;width:100%;border:0;background:' + cfg.bg + ';"></iframe>' +
