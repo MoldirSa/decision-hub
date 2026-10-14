@@ -900,11 +900,13 @@ class DataStore{
           this.vendors = SeedData.buildVendors();
           dirty = true;
         }
+        if(SeedData.mergePartners(this.vendors)) dirty = true;
         if(dirty) this.save();
       }catch(e){
         this.cards = SeedData.build();
         if(!this.hypotheses || !this.hypotheses.length) this.hypotheses = SeedData.buildHypotheses();
         if(!Array.isArray(this.vendors) || !this.vendors.length) this.vendors = SeedData.buildVendors();
+        SeedData.mergePartners(this.vendors);
         this.save();
       }
     } else {
@@ -1250,10 +1252,118 @@ class SeedData{
       decisionWhy: '',
       contractOwner: '',
       integrateStart: '',
+      partnerProgram: '',
+      partnerModels: '',
+      partnerContact: '',
+      partnerUrl: '',
       history: [],
       createdAt: Date.now(),
       updatedAt: Date.now()
     }, partial);
+  }
+  static partnerCatalog(){
+    return {
+      'vnd-trebol': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'Прямой контракт. Партнёрский трек на gotrebol.com не опубликован.',
+        partnerContact: 'sales@gotrebol.com',
+        partnerUrl: 'https://www.gotrebol.com/'
+      },
+      'vnd-nufi': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'Прямые продажи и API. Отдельный partner desk не найден.',
+        partnerContact: 'ventas@nufi.mx, hola@nufi.mx, +52 81 2878 4576',
+        partnerUrl: 'https://www.nufi.mx/contacto'
+      },
+      'vnd-atlas': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'Прямой контракт через опубликованный ящик.',
+        partnerContact: 'contacto@atlasmx.ai',
+        partnerUrl: 'https://atlasmx.ai/'
+      },
+      'vnd-sumsub': {
+        partnerProgram: 'Sumsub Partner Program',
+        partnerModels: 'Referral (без интеграции), Reseller (маржа и свой клиент), Technology (встройка в продукт). Partner Hub: обучение, регистрация сделок, материалы. Заявка — ответ в течение 48 часов, по странице программы.',
+        partnerContact: 'Заявка: sumsub.com/partners. Продажи: hello@sumsub.com, +44 20 3882 7770',
+        partnerUrl: 'https://sumsub.com/partners/'
+      },
+      'vnd-qq': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'API Q-Detect продаётся напрямую. Партнёрский трек не найден.',
+        partnerContact: 'ventas@quienesquien.com.mx, (55) 5596-3030',
+        partnerUrl: 'https://quienesquien.mx/integracion-api-q-detect/'
+      },
+      'vnd-verifik': {
+        partnerProgram: 'Verifik Partners Program',
+        partnerModels: 'Referral: разовая комиссия с оплаты первого месяца. Reseller: комиссия на срок жизни клиента. Integrator: разовый доход за интеграцию и поддержку L1/L2. Reseller и Integrator вместе. Co-marketing. Perks Hub.',
+        partnerContact: 'Заявка на странице программы. Отдельный именной партнёрский контакт не опубликован.',
+        partnerUrl: 'https://verifik.co/en/partners-eng/'
+      },
+      'vnd-pld': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'Лицензия на списки и API. Партнёрский трек не найден.',
+        partnerContact: 'contacto@pldcompliance.com, +52 55 6877 4921',
+        partnerUrl: 'https://pldcompliance.mx/'
+      },
+      'vnd-incode': {
+        partnerProgram: 'Incode Partner Program',
+        partnerModels: 'Embed / OEM: встройка в свой продукт, отдельные цены и техподдержка. Reseller: для SI и VAR, регистрация сделки и co-sell. Referral и co-sell: реферальное вознаграждение.',
+        partnerContact: 'contact@incode.com, +1 650 446 3444. Офис CDMX: Arquímedes 212, Polanco.',
+        partnerUrl: 'https://www.incode.com/partner-program/'
+      },
+      'vnd-truora': {
+        partnerProgram: 'Truora partnership program',
+        partnerModels: 'Solution Partner и Technology Partner. На странице указана интеграция WhatsApp в HubSpot Marketplace. Именной руководитель партнёрств на официальной странице не опубликован.',
+        partnerContact: 'Форма на странице программы. Офис Мексики: Av. Ejército Nacional 351, Granada, Miguel Hidalgo, 11520, Ciudad de México.',
+        partnerUrl: 'https://www.truora.com/en/partneships'
+      },
+      'vnd-trulioo': {
+        partnerProgram: 'Trulioo Partner Network',
+        partnerModels: 'Data Source: поставщики идентификационных данных. Technology: документ, ИИ, биометрия. Identity: IAM, финансовые платформы, CRM, fraud и case management.',
+        partnerContact: 'Страница сети: trulioo.com/company/partners. Опубликованный ящик продаж: sales@trulioo.com, +1 778 657 6245. Отдельный partner-email не найден.',
+        partnerUrl: 'https://www.trulioo.com/company/partners'
+      },
+      'vnd-moodys': {
+        partnerProgram: 'Moody\'s Partner Marketplace',
+        partnerModels: 'Совместное развитие бизнеса, сообщества партнёров, обучение и сертификация, поддержка до и после продажи. На витрине есть интеграции KYC, в том числе Pega и Intapp. Это примеры экосистемы, не контакты для нашего договора.',
+        partnerContact: 'Заявка: partners.moodys.com. Общий EMEA-телефон продукта: +44 20 7772 5454. Именной partner manager не опубликован.',
+        partnerUrl: 'https://www.moodys.com/web/en/us/about-us/partners-marketplace.html'
+      },
+      'vnd-kyckr': {
+        partnerProgram: 'Публичная программа не подтверждена',
+        partnerModels: 'Kyckr продаёт реестровые данные в чужие workflow. Отдельная страница набора партнёров в этом обзоре не сверена.',
+        partnerContact: 'info@kyckr.com, +353 1 578 8377',
+        partnerUrl: 'https://kyckr.com/contact-us'
+      },
+      'vnd-69b': {
+        partnerProgram: 'Публичной программы нет',
+        partnerModels: 'Самостоятельный API-ключ в кабинете. Это точечная проверка списка, не партнёрский канал.',
+        partnerContact: 'Активация ключа в профиле 69b.mx',
+        partnerUrl: 'https://69b.mx/api'
+      },
+      'vnd-metamap': {
+        partnerProgram: 'Через Incode Partner Program',
+        partnerModels: 'Карточка компании Incode указывает поглощение MetaMap в июне 2024. Отдельной программы MetaMap не использовать: треки те же, что у Incode — Embed, Reseller, Referral.',
+        partnerContact: 'contact@incode.com, +1 650 446 3444. Продуктовая страница MetaMap: metamap.com',
+        partnerUrl: 'https://www.incode.com/partner-program/'
+      }
+    };
+  }
+  static mergePartners(list){
+    if(!Array.isArray(list)) return false;
+    const catalog = SeedData.partnerCatalog();
+    let dirty = false;
+    list.forEach(v=>{
+      const fact = catalog[v.id];
+      if(!fact) return;
+      ['partnerProgram','partnerModels','partnerContact','partnerUrl'].forEach(key=>{
+        if(!String(v[key] || '').trim() && fact[key]){
+          v[key] = fact[key];
+          dirty = true;
+        }
+      });
+    });
+    return dirty;
   }
   static buildVendors(){
     const rows = [
@@ -1272,9 +1382,10 @@ class SeedData{
       ['vnd-69b','69b.mx','Списки','Ключ в кабинете 69b.mx','API списка 69-B и смежных публикаций SAT','Подключить как точечную проверку, не как онбординг компании'],
       ['vnd-metamap','MetaMap','Биометрия','metamap.com','GovCheck CURP/RFC для физлица','Не ставить в KYB-оркестратор, пока нет UBO компании']
     ];
-    return rows.map(r => SeedData.vendor({
+    const catalog = SeedData.partnerCatalog();
+    return rows.map(r => SeedData.vendor(Object.assign({
       id:r[0], name:r[1], track:r[2], contact:r[3], why:r[4], nextAction:r[5]
-    }));
+    }, catalog[r[0]] || {})));
   }
 }
 
@@ -2269,6 +2380,7 @@ function renderVendorTile(v){
     '<div class="tile-top"><span class="badge" style="background:#f4f4f5;color:#3f3f46;">'+esc(v.track)+'</span></div>' +
     '<h3>'+esc(v.name)+'</h3>' +
     '<p class="tile-desc">'+esc(v.nextAction || 'Нет следующего шага')+'</p>' +
+    '<div class="muted">'+esc(v.partnerProgram || 'Программа не указана')+'</div>' +
     '<div class="tile-meta"><span>'+esc(v.owner || 'Product')+'</span><span style="margin:0 6px;">·</span><span'+(overdue?' style="color:#dc2626;font-weight:600;"':'')+'>'+due+'</span></div>' +
     '<div class="tile-progress"><div class="tile-progress-bar" style="width:'+pct+'%;'+(missing.length?'background:#d97706;':'')+'"></div></div>' +
     '<span class="tile-progress-label">'+(missing.length ? ('Ворота: открыто ' + missing.length) : 'Ворота стадии закрыты')+'</span>' +
@@ -2304,11 +2416,27 @@ function renderVendorQueue(list){
     }).join('') +
     '</tbody></table></div></div>';
 }
+function renderPartnerTable(list){
+  if(!list.length) return '';
+  return '<div class="panel"><h2>Партнёрство</h2>' +
+    '<p class="muted" style="margin:-6px 0 12px;">Программы и каналы с сайтов вендоров. Именные partner-менеджеры опубликованы не были. Личные адреса из справочников не подставлены.</p>' +
+    '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Вендор</th><th>Программа</th><th>Модели</th><th>Куда писать</th></tr></thead><tbody>' +
+    list.map(v=>{
+      const link = v.partnerUrl ? '<div><a href="'+esc(v.partnerUrl)+'" target="_blank" rel="noopener">Страница программы</a></div>' : '';
+      return '<tr data-action="open-vendor" data-vendor="'+esc(v.id)+'">' +
+        '<td><b>'+esc(v.name)+'</b></td>' +
+        '<td>'+esc(v.partnerProgram || '—')+'</td>' +
+        '<td>'+esc(v.partnerModels || '—')+'</td>' +
+        '<td>'+esc(v.partnerContact || v.contact || '—')+link+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div></div>';
+}
 function renderVendorFunnel(app){
   const q = (app.state.search || '').trim().toLowerCase();
   const all = (app.store.vendors || []).filter(v=>{
     if(!q) return true;
-    return [v.name, v.contact, v.why, v.track, v.nextAction, v.owner].join(' ').toLowerCase().indexOf(q) >= 0;
+    return [v.name, v.contact, v.why, v.track, v.nextAction, v.owner, v.partnerProgram, v.partnerContact, v.partnerModels].join(' ').toLowerCase().indexOf(q) >= 0;
   });
   const track = app.state.vendorTrack || '';
   const lane = app.state.vendorLane || 'active';
@@ -2351,6 +2479,7 @@ function renderVendorFunnel(app){
       '</div>' +
       '<button class="btn-primary" data-action="open-new-vendor">Добавить вендора</button>' +
     '</div>' +
+    renderPartnerTable(tracked) +
     '<div class="panel" style="padding:12px 14px;"><div style="display:flex;gap:8px;flex-wrap:wrap;">' +
       VENDOR_ACTIVE.map(id=>'<span class="tag">'+esc(vendorStage(id).label)+' '+count(id)+'</span>').join('') +
       '<span class="tag">Пауза '+count('parked')+'</span><span class="tag">Отказ '+count('rejected')+'</span>' +
@@ -2379,7 +2508,14 @@ function renderVendorModal(v){
         VENDOR_TRACKS.map(t=>'<option value="'+esc(t)+'" '+(t===v.track?'selected':'')+'>'+esc(t)+'</option>').join('') +
       '</select></div>' +
       vendorField('Владелец', 'owner', v.owner) +
-      vendorField('Канал', 'contact', v.contact) +
+      vendorField('Канал продаж', 'contact', v.contact) +
+      '<div class="panel"><h2>Партнёрство</h2>' +
+        (v.partnerUrl ? '<p><a href="'+esc(v.partnerUrl)+'" target="_blank" rel="noopener">Открыть страницу программы</a></p>' : '') +
+        vendorField('Программа', 'partnerProgram', v.partnerProgram) +
+        '<div class="field"><label>Модели</label><textarea name="partnerModels" rows="3">'+esc(v.partnerModels||'')+'</textarea></div>' +
+        '<div class="field"><label>Канал партнёрства</label><textarea name="partnerContact" rows="2">'+esc(v.partnerContact||'')+'</textarea></div>' +
+        vendorField('Ссылка', 'partnerUrl', v.partnerUrl) +
+      '</div>' +
       '<div class="field"><label>Зачем в книге</label><textarea name="why" rows="2">'+esc(v.why||'')+'</textarea></div>' +
       vendorField('Следующий шаг', 'nextAction', v.nextAction) +
       vendorField('Срок шага', 'nextDue', v.nextDue, 'date') +
@@ -3194,7 +3330,7 @@ class App{
       const vendor = this.store.getVendor(form.dataset.vendor);
       if(!vendor) return;
       const fd = new FormData(form);
-      const keys = ['stage','track','owner','contact','why','nextAction','nextDue','outreachAt','meetingAt','meetingWho','sourceNamed','accessEnv','accessUntil','accessScope','sampleN','sampleHit','sampleHours','regime','custody','priceCase','quoteIncludes','quoteExcludes','decision','decisionWhy','contractOwner','integrateStart','notes'];
+      const keys = ['stage','track','owner','contact','why','nextAction','nextDue','outreachAt','meetingAt','meetingWho','sourceNamed','accessEnv','accessUntil','accessScope','sampleN','sampleHit','sampleHours','regime','custody','priceCase','quoteIncludes','quoteExcludes','decision','decisionWhy','contractOwner','integrateStart','notes','partnerProgram','partnerModels','partnerContact','partnerUrl'];
       const patch = {};
       keys.forEach(k=>{ patch[k] = String(fd.get(k) || '').trim(); });
       if(patch.stage !== vendor.stage){
