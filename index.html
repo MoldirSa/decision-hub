@@ -83,6 +83,12 @@ a{ color:inherit; }
 }
 .nav-item:hover{ background:#eeeef0; color:var(--text); }
 .nav-item.active{ background:var(--text); color:#fff; }
+.nav-item.nav-sub{ padding-left:16px; font-size:13px; }
+.nav-group{
+  margin:16px 8px 4px;
+  font-size:10.5px; font-weight:650; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--text-faint);
+}
 .nav-icon{ width:18px; text-align:center; flex:none; font-size:13px; }
 
 .main-col{ flex:1; display:flex; flex-direction:column; min-width:0; }
@@ -229,6 +235,14 @@ a{ color:inherit; }
 .kanban-col-head .count{ margin-left:auto; font-size:12px; color:var(--text-muted); background:#e4e4e7; padding:1px 8px; border-radius:999px; }
 .kanban-col-body{ display:flex; flex-direction:column; gap:10px; min-height:80px; border-radius:var(--radius-md); transition:background .12s,outline .12s; padding:2px; }
 .kanban-col-body.drag-over{ background:#eef2ff; outline:2px dashed #a5b4fc; }
+.vendor-board .kanban-col{ width:232px; flex-basis:232px; }
+.kanban-hint{ font-size:11px; color:var(--text-muted); padding:0 6px 8px; line-height:1.35; }
+.vendor-tile{ cursor:grab; }
+.vendor-tile .tile-desc{ -webkit-line-clamp:3; }
+.mr-prose p{ margin:0 0 10px; line-height:1.5; }
+.mr-prose p:last-child{ margin-bottom:0; }
+.mr-prose h3{ font-size:13.5px; font-weight:650; margin:0 0 6px; }
+.mr-source{ margin-top:8px; }
 
 /* ============================================================
    DEVELOPMENT AUTO-VIEW
@@ -292,7 +306,7 @@ a{ color:inherit; }
 .modal-fields{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
 .field{ margin-bottom:14px; }
 .field > label{ display:block; font-size:11.5px; font-weight:650; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); margin-bottom:6px; }
-.field select,.field input[type=text],.field textarea{
+.field select,.field input[type=text],.field input[type=date],.field textarea{
   width:100%; padding:7px 9px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); background:#fff;
 }
 .editable-text{ padding:5px 7px; border-radius:var(--radius-sm); cursor:text; min-height:20px; white-space:pre-wrap; }
@@ -504,7 +518,40 @@ const NAV_ITEMS = [
   {id:'decisions',   label:'Decisions',         icon:'▤'},
   {id:'graph',       label:'Dependency Graph',  icon:'◈'},
   {id:'scheme',      label:'Interaction Scheme', icon:'⇄'},
+  {id:'market-kyb',     label:'KYB',      icon:'▣', group:'Market Research'},
+  {id:'market-kyt',     label:'KYT',      icon:'↔', group:'Market Research'},
+  {id:'market-aml',     label:'AML',      icon:'⚑', group:'Market Research'},
+  {id:'vendor-funnel',  label:'Воронка',  icon:'▸', group:'Работа с вендорами'},
 ];
+
+const VENDOR_TRACKS = ['Мексика','Списки','Глобальный','Биометрия','Уточнить покрытие'];
+const VENDOR_STAGES = [
+  {id:'shortlist',  label:'Шортлист',         hint:'Контакт и причина попадания в книгу'},
+  {id:'outreach',   label:'Запрос отправлен', hint:'Письмо или форма ушли, ждём слот'},
+  {id:'meeting',    label:'Встреча проведена', hint:'Демо было. Зафиксированы источники'},
+  {id:'access',     label:'Тестовый доступ',  hint:'Песочница или ключ получены'},
+  {id:'sample',     label:'Выборка',          hint:'Прогон своих кейсов, не демо вендора'},
+  {id:'score',      label:'Оценка',           hint:'Режим, хранение документов, цена кейса'},
+  {id:'commercial', label:'Коммерция',        hint:'Письменное предложение на руках'},
+  {id:'decision',   label:'Решение PM',       hint:'Партнёр, второй источник или отказ'},
+  {id:'integrate',  label:'Интеграция',       hint:'Договор и технический контур'},
+  {id:'parked',     label:'Пауза',            hint:'Сняты с активного цикла'},
+  {id:'rejected',   label:'Отказ',            hint:'В книгу не возвращаем без новой причины'},
+];
+const VENDOR_ACTIVE = ['shortlist','outreach','meeting','access','sample','score','commercial','decision','integrate'];
+const VENDOR_GATES = {
+  shortlist:  [['contact','Канал'], ['why','Зачем в книге']],
+  outreach:   [['outreachAt','Дата запроса']],
+  meeting:    [['meetingAt','Дата встречи'], ['meetingWho','Кто был'], ['sourceNamed','Имя источника данных']],
+  access:     [['accessEnv','Среда'], ['accessUntil','Доступ до'], ['accessScope','Что можно вызвать']],
+  sample:     [['sampleN','Размер выборки'], ['sampleHit','Доля совпадений'], ['sampleHours','Время ответа']],
+  score:      [['regime','Какой режим закрывает'], ['custody','Где лежат документы'], ['priceCase','Цена завершённого кейса']],
+  commercial: [['quoteIncludes','Что входит'], ['quoteExcludes','Что исключено']],
+  decision:   [['decision','Решение'], ['decisionWhy','Обоснование']],
+  integrate:  [['contractOwner','Владелец договора'], ['integrateStart','Старт интеграции']],
+  parked:     [['decisionWhy','Почему пауза']],
+  rejected:   [['decisionWhy','Почему отказ']],
+};
 
 /* Editable custom Mermaid diagrams — one per user scenario, seeded from
    the legal/business model description given when this feature was set up.
@@ -832,6 +879,7 @@ class DataStore{
     this.listeners = [];
     this.cards = [];
     this.hypotheses = [];
+    this.vendors = [];
     this.load();
   }
   load(){
@@ -841,24 +889,33 @@ class DataStore{
         const parsed = JSON.parse(raw);
         this.cards = parsed.cards || [];
         this.hypotheses = Array.isArray(parsed.hypotheses) ? parsed.hypotheses : [];
+        this.vendors = Array.isArray(parsed.vendors) ? parsed.vendors : null;
         if(!Array.isArray(this.cards) || !this.cards.length) throw new Error('empty');
+        let dirty = false;
         if(!this.hypotheses.length){
           this.hypotheses = SeedData.buildHypotheses();
-          this.save();
+          dirty = true;
         }
+        if(this.vendors === null){
+          this.vendors = SeedData.buildVendors();
+          dirty = true;
+        }
+        if(dirty) this.save();
       }catch(e){
         this.cards = SeedData.build();
         if(!this.hypotheses || !this.hypotheses.length) this.hypotheses = SeedData.buildHypotheses();
+        if(!Array.isArray(this.vendors) || !this.vendors.length) this.vendors = SeedData.buildVendors();
         this.save();
       }
     } else {
       this.cards = SeedData.build();
       this.hypotheses = SeedData.buildHypotheses();
+      this.vendors = SeedData.buildVendors();
       this.save();
     }
   }
   save(){
-    localStorage.setItem(this.key, JSON.stringify({cards:this.cards, hypotheses:this.hypotheses, savedAt:Date.now()}));
+    localStorage.setItem(this.key, JSON.stringify({cards:this.cards, hypotheses:this.hypotheses, vendors:this.vendors, savedAt:Date.now()}));
     this.notify();
   }
   subscribe(fn){ this.listeners.push(fn); }
@@ -889,6 +946,19 @@ class DataStore{
   }
   deleteHypothesis(id){
     this.hypotheses = this.hypotheses.filter(h=>h.id!==id);
+    this.save();
+  }
+  getVendor(id){ return this.vendors.find(v=>v.id===id); }
+  addVendor(v){ this.vendors.push(v); this.save(); }
+  updateVendor(id, patch){
+    const v = this.getVendor(id);
+    if(!v) return;
+    Object.assign(v, patch);
+    v.updatedAt = Date.now();
+    this.save();
+  }
+  deleteVendor(id){
+    this.vendors = this.vendors.filter(v=>v.id!==id);
     this.save();
   }
 }
@@ -1149,6 +1219,63 @@ class SeedData{
     pushHypHistory(items[4], productActor, 'Отклонена', 'Нет юр. модели бонуса до Q4');
     return items;
   }
+  static vendor(partial){
+    return Object.assign({
+      id: uid('vnd'),
+      name: '',
+      track: 'Мексика',
+      contact: '',
+      why: '',
+      stage: 'shortlist',
+      owner: 'Product',
+      nextAction: 'Назначить дату запроса демо',
+      nextDue: '',
+      notes: '',
+      outreachAt: '',
+      meetingAt: '',
+      meetingWho: '',
+      sourceNamed: '',
+      accessEnv: '',
+      accessUntil: '',
+      accessScope: '',
+      sampleN: '',
+      sampleHit: '',
+      sampleHours: '',
+      regime: '',
+      custody: '',
+      priceCase: '',
+      quoteIncludes: '',
+      quoteExcludes: '',
+      decision: '',
+      decisionWhy: '',
+      contractOwner: '',
+      integrateStart: '',
+      history: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }, partial);
+  }
+  static buildVendors(){
+    const rows = [
+      ['vnd-trebol','Trébol','Мексика','sales@gotrebol.com','Acta, акционеры, poderes, SIGER и SAT в одном API','Отправить запрос: покрытие SIGER по штатам и есть ли список 69-B'],
+      ['vnd-nufi','Nufi','Мексика','ventas@nufi.mx, +52 81 2878 4576','Документы, биометрия представителя, e.firma, CFDI','Уточнить, есть ли прямой SIGER, или только документы клиента'],
+      ['vnd-atlas','Atlas','Мексика','contacto@atlasmx.ai','Выгрузка SAT по согласию клиента и список 69-B','Спросить, что возвращается по одному RFC без CIEC и e.firma'],
+      ['vnd-sumsub','Sumsub','Глобальный','hello@sumsub.com, +44 20 3882 7770','В документации названы RPC/RFC, SIGER и SAT','Запросить пример ответа по Мексике: 69-B и poderes'],
+      ['vnd-qq','Quién es Quién','Списки','ventas@quienesquien.com.mx, (55) 5596-3030','PEP, санкции и национальные списки по RFC','Держать как скрининг рядом с реестром, не как KYB'],
+      ['vnd-verifik','Verifik','Мексика','Форма на verifik.co','Сверка юрлица по Folio Mercantil','Проверить, что это не UBO и не 69-B, до встречи'],
+      ['vnd-pld','PLD Compliance','Списки','contacto@pldcompliance.com, +52 55 6877 4921','Lista negra SAT и PEP','Сравнить покрытие 69-B с 69b.mx и Q-Detect'],
+      ['vnd-incode','Incode','Биометрия','contact@incode.com, офис Polanco','Биометрия представителя','Не обещать корпоративный KYB, пока SIGER и 69-B не показаны'],
+      ['vnd-truora','Truora','Биометрия','Форма truora.com/en/contact-sales, офис в Мехико','LATAM KYC','Спросить, есть ли persona moral, или только физлицо'],
+      ['vnd-trulioo','Trulioo','Уточнить покрытие','sales@trulioo.com, +1 778 657 6245','Глобальный KYB. RFC указан как тип ID','Письменный вопрос: коннектор SAT, SIGER или 69-B и доля успешных RFC'],
+      ['vnd-moodys','Moody\'s Kompany','Уточнить покрытие','EMEA +44 20 7772 5454','Первичные реестры и иностранная цепочка владения','Подтвердить Мексику по имени источника до шортлиста в активный цикл'],
+      ['vnd-kyckr','Kyckr','Уточнить покрытие','info@kyckr.com, +353 1 578 8377','Живые реестры. Латинская Америка описана как неровная','Проверить Мексику в Coverage Portal до демо'],
+      ['vnd-69b','69b.mx','Списки','Ключ в кабинете 69b.mx','API списка 69-B и смежных публикаций SAT','Подключить как точечную проверку, не как онбординг компании'],
+      ['vnd-metamap','MetaMap','Биометрия','metamap.com','GovCheck CURP/RFC для физлица','Не ставить в KYB-оркестратор, пока нет UBO компании']
+    ];
+    return rows.map(r => SeedData.vendor({
+      id:r[0], name:r[1], track:r[2], contact:r[3], why:r[4], nextAction:r[5]
+    }));
+  }
 }
 
 /* ============================================================
@@ -1367,6 +1494,35 @@ class ExportManager{
 /* ============================================================
    HTML TEMPLATE HELPERS
    ============================================================ */
+function renderNavItems(){
+  let html = '';
+  let last = '';
+  NAV_ITEMS.forEach(n=>{
+    const group = n.group || '';
+    if(group !== last){
+      if(group) html += '<div class="nav-group">'+esc(group)+'</div>';
+      last = group;
+    }
+    html += '<button class="nav-item'+(group?' nav-sub':'')+'" data-action="nav" data-view="'+n.id+'"><span class="nav-icon">'+n.icon+'</span><span class="nav-label">'+esc(n.label)+'</span></button>';
+  });
+  return html;
+}
+function vendorStage(id){ return VENDOR_STAGES.find(s=>s.id===id) || VENDOR_STAGES[0]; }
+function vendorGateFields(stageId){ return VENDOR_GATES[stageId] || []; }
+function vendorMissing(v){
+  return vendorGateFields(v.stage).filter(([key])=>!String(v[key]||'').trim());
+}
+function vendorOverdue(v){
+  if(!v.nextDue || v.stage === 'rejected') return false;
+  const today = new Date();
+  const due = new Date(v.nextDue + 'T23:59:59');
+  return due.getTime() < today.getTime();
+}
+function pushVendorHistory(v, who, text){
+  v.history = v.history || [];
+  v.history.push({at:Date.now(), who: who || 'Product', text});
+}
+
 function renderShell(){
   return '' +
   '<div class="app" id="app">' +
@@ -1375,9 +1531,7 @@ function renderShell(){
         '<div class="brand-mark">DH</div>' +
         '<div class="brand-text"><div class="brand-title">Decision Hub</div><div class="brand-sub secondary-ui">Transactional Model Grooming</div></div>' +
       '</div>' +
-      '<nav class="sidebar-nav" id="sidebar-nav">' +
-        NAV_ITEMS.map(n=>'<button class="nav-item" data-action="nav" data-view="'+n.id+'"><span class="nav-icon">'+n.icon+'</span><span class="nav-label">'+esc(n.label)+'</span></button>').join('') +
-      '</nav>' +
+      '<nav class="sidebar-nav" id="sidebar-nav">' + renderNavItems() + '</nav>' +
     '</aside>' +
     '<div class="main-col">' +
       '<header class="topbar">' +
@@ -2008,6 +2162,269 @@ function renderHypReport(list){
       '</tbody></table></div></div>';
 }
 
+function renderMarketFrame(title, lede, body){
+  return '<div class="view-header"><h1>'+title+'</h1><p class="muted">'+lede+'</p></div>' + body;
+}
+function renderMarketKyb(){
+  return renderMarketFrame(
+    'KYB — рынок провайдеров',
+    'Срез 14 октября 2026. Цифры покрытия — заявления вендоров. Статус работы с ними ведётся отдельно, в воронке.',
+    '<div class="stat-grid">' +
+      '<div class="stat-tile"><div class="stat-value">25%</div><div class="stat-label">Порог капитала в очереди LFPIORPI</div></div>' +
+      '<div class="stat-tile discussion"><div class="stat-value">1 мар 2027</div><div class="stat-label">Старт главы о Beneficiario Controlador</div></div>' +
+      '<div class="stat-tile"><div class="stat-value">10 лет</div><div class="stat-label">Хранение досье по правилам</div></div>' +
+      '<div class="stat-tile"><div class="stat-value">$7,02 млрд</div><div class="stat-label">Мировой business identity verification, 2026</div></div>' +
+    '</div>' +
+    '<div class="panel mr-prose"><h2>Какую работу покупают</h2>' +
+      '<p>KYB отвечает на четыре вопроса: компания существует и действует; какое физическое лицо владеет или контролирует её; есть ли компания и это лицо в санкциях, PEP или негативных медиа; изменилось ли это после открытия отношений.</p>' +
+      '<p>Мировой рынок продаётся тремя слоями: национальный реестр, граф владения и платформа, которая склеивает реестр, скрининг и KYC физического лица. Mordor оценивает business identity verification в $7,02 млрд в 2026 и $15,18 млрд к 2031. Узкий прогноз Liminal для банков и финтеха — $5,5 млрд к 2028. Долю Мексики эти отчёты не выделяют. Оценки складывать нельзя.</p>' +
+      '<p>Для мексиканской книги решение принимает не число стран на сайте. Нужны четыре местных источника: SAT, SIGER / Registro Público de Comercio, список 69-B и цепочка до физического лица. SIGER — шлюз к реестрам штатов, поэтому пилот только на Ciudad de México завышает качество.</p>' +
+      '<p><button class="btn-primary" data-action="nav" data-view="vendor-funnel">Открыть воронку вендоров</button></p>' +
+    '</div>' +
+    '<div class="panel"><h2>Правила, под которые работает провайдер</h2>' +
+      '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Режим</th><th>Кто применяет</th><th>Правило</th><th>Что это значит для выбора</th></tr></thead><tbody>' +
+        '<tr><td>LFPIORPI, Beneficiario Controlador</td><td>Actividades vulnerables, надзор SAT / UIF</td><td>Статья 23 Quinquies: сначала физлицо с 25% капитала прямо или косвенно, затем контроль через решения, затем высший администратор. Acuerdo вступает в силу 30 ноября 2026. Глава обязательна для операций с 1 марта 2027. Автоматические механизмы — не позднее 1 июня 2027. Хранение 10 лет.</td><td>Провайдер должен отдать документированную цепочку, а не одну декларацию клиента.</td></tr>' +
+        '<tr><td>CNBV, Propietario Real</td><td>Банки и поднадзорные финансового сектора</td><td>Отдельный режим. Trébol публично описывает пять доказательных путей: опросник, actas de asamblea, сертификация капитала, SIGER и poderes, если никто не проходит 25%. Это описание вендора, не сверенный текст dispositions.</td><td>Закрытый LFPIORPI не закрывает банковский режим сам по себе.</td></tr>' +
+        '<tr><td>ЕС, Регламент 2024/1624</td><td>Обязанные лица ЕС с 10 июля 2027</td><td>Порог владения или контроля 25%, с правом снизить его для высокого риска.</td><td>Европейский оркестратор не заменяет SAT и 69-B.</td></tr>' +
+        '<tr><td>США, CDD и BOI</td><td>Покрытые финансовые институты</td><td>Обязанность банка проверять бенефициара сохранилась. Федеральная отчётность domestic companies по BOI снята правилом FinCEN 91 FR 52508 с 14 августа 2026, по разбору Zyphe.</td><td>Middesk и Baselayer имеют глубину реестров штатов США. Для мексиканской книги они не первый вызов.</td></tr>' +
+      '</tbody></table></div>' +
+      '<p class="muted mr-source">Первичный текст Мексики: Acuerdo DOF, Reglas LFPIORPI, sidof.segob.gob.mx/notas/docFuente/5795797. Мировой объём: Mordor, Business Identity Verification. Сроки ЕС и правило США — по публичным разборам Zyphe от 12 октября 2026.</p>' +
+    '</div>' +
+    '<div class="panel"><h2>Что проверять в Мексике</h2>' +
+      '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Вопрос</th><th>Источник</th></tr></thead><tbody>' +
+        '<tr><td>Компания существует и активна в налоге</td><td>RFC и constancia de situación fiscal, SAT</td></tr>' +
+        '<tr><td>Нет налоговой блокировки</td><td>Opinión de cumplimiento и список 69-B</td></tr>' +
+        '<tr><td>Есть запись в торговом реестре</td><td>SIGER 2.0 / Registro Público de Comercio</td></tr>' +
+        '<tr><td>Кто владеет 25% и больше</td><td>Acta, asamblea, цепочка до физлица</td></tr>' +
+        '<tr><td>Кто вправе подписывать</td><td>Poderes</td></tr>' +
+        '<tr><td>Представитель — тот человек</td><td>INE, CURP / RENAPO, биометрия</td></tr>' +
+      '</tbody></table></div>' +
+    '</div>' +
+    '<div class="panel"><h2>Провайдеры и публичные каналы</h2>' +
+      '<p class="muted" style="margin:-6px 0 12px;">Именные аккаунт-менеджеры в открытом доступе не опубликованы. Личные адреса с LinkedIn в таблицу не ставились.</p>' +
+      '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Очередь</th><th>Вендор</th><th>Слой</th><th>Что опубликовано</th><th>Пробел</th><th>Канал</th></tr></thead><tbody>' +
+        '<tr><td>1</td><td>Trébol</td><td>Мексика</td><td>SIGER 2.0, SAT/CSF, FIEL, RENAPO, INE, акционеры и poderes</td><td>69-B в открытой документации не назван</td><td>sales@gotrebol.com</td></tr>' +
+        '<tr><td>1</td><td>Nufi</td><td>Мексика</td><td>Acta, poderes, биометрия, .key/.cer, opinión de cumplimiento, CFDI</td><td>Прямой SIGER на KYB-странице не указан</td><td>ventas@nufi.mx</td></tr>' +
+        '<tr><td>1</td><td>Atlas</td><td>Мексика</td><td>CSF, opinión, RPC, 69-B, CFDI по согласию клиента</td><td>Глубина цепочки за пределами RPC не аудирована</td><td>contacto@atlasmx.ai</td></tr>' +
+        '<tr><td>1</td><td>Sumsub</td><td>Глобальный</td><td>Документация называет RPC/RFC, SIGER и SAT</td><td>69-B и poderes в таблице источников не перечислены</td><td>hello@sumsub.com</td></tr>' +
+        '<tr><td>1</td><td>Quién es Quién</td><td>Списки</td><td>PEP, санкции, совпадение по RFC и CURP</td><td>Не реестр и не структура владения</td><td>ventas@quienesquien.com.mx</td></tr>' +
+        '<tr><td>2</td><td>Verifik</td><td>Мексика</td><td>Имя и город по Folio Mercantil</td><td>Не UBO и не 69-B</td><td>verifik.co</td></tr>' +
+        '<tr><td>2</td><td>PLD Compliance</td><td>Списки</td><td>Lista negra SAT, PEP, массовые сверки</td><td>Скрининг, не онбординг</td><td>contacto@pldcompliance.com</td></tr>' +
+        '<tr><td>2</td><td>69b.mx</td><td>Списки</td><td>API 69-B и смежных публикаций SAT</td><td>Один налоговый риск</td><td>кабинет 69b.mx</td></tr>' +
+        '<tr><td>2</td><td>Incode</td><td>Биометрия</td><td>Офис в Мехико, биометрия физлица</td><td>Корпоративный KYB на странице контактов не описан</td><td>contact@incode.com</td></tr>' +
+        '<tr><td>2</td><td>Truora</td><td>Биометрия</td><td>Офис в Мехико, KYC Латинской Америки</td><td>Реестр persona moral в открытом описании не найден</td><td>truora.com/en/contact-sales</td></tr>' +
+        '<tr><td>Спросить</td><td>Trulioo</td><td>Глобальный</td><td>RFC как тип налогового ID, KYB на 195 стран</td><td>Коннектор SAT или SIGER в открытых страницах не найден</td><td>sales@trulioo.com</td></tr>' +
+        '<tr><td>Спросить</td><td>Moody\'s Kompany</td><td>Граф владения</td><td>Первичные реестры 200+ юрисдикций</td><td>Мексика на странице продукта не названа</td><td>+44 20 7772 5454</td></tr>' +
+        '<tr><td>Спросить</td><td>Kyckr</td><td>Реестры</td><td>Живые цифровые реестры</td><td>Мексика в этом обзоре — UNKNOWN, портал покрытия не сверен</td><td>info@kyckr.com</td></tr>' +
+        '<tr><td>Не первый</td><td>Middesk, Baselayer</td><td>США</td><td>Secretary of State и IRS</td><td>Международный UBO Middesk в релизе августа 2026 не описан</td><td>—</td></tr>' +
+      '</tbody></table></div>' +
+    '</div>' +
+    '<div class="panel mr-prose"><h2>Как выбирать</h2>' +
+      '<p>Если почти все юрлица мексиканские: местный оркестратор (Trébol, Nufi или Atlas), рядом список (Q-Detect или 69b.mx) и биометрия представителя. Если Мексика — одна из многих стран: Sumsub как общий контракт, местный источник добавляется, если на пилоте SIGER или 69-B пустые. Иностранный холдинг над мексиканской компанией местная acta не раскрывает: здесь нужен глобальный граф, и его покрытие по Мексике надо подтвердить на демо.</p>' +
+      '<p>На пилоте — 30 RFC из разных штатов. Считать статус SAT, попадание в 69-B, найденного акционера, poder и время. Глубокая выгрузка SAT у части вендоров стартует только с паролем клиента или e.firma.</p>' +
+      '<p>Своя разработка SIGER и SAT окупается только при лицензированном доступе. Такого доступа в открытых источниках нет.</p>' +
+    '</div>' +
+    '<div class="panel"><h2>Риски и пробелы</h2>' +
+      '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Риск</th><th>Вопрос на демо</th></tr></thead><tbody>' +
+        '<tr><td>Перепутать LFPIORPI и режим CNBV</td><td>Какой режим закрывает продукт и каким документом</td></tr>' +
+        '<tr><td>SAT-данные только при согласии клиента</td><td>Что доступно по одному RFC без пароля</td></tr>' +
+        '<tr><td>SIGER неравномерен по штатам</td><td>Доля успешных ответов по 10 штатам из книги</td></tr>' +
+        '<tr><td>Страна в списке 195 не означает источник</td><td>Имя источника: SAT, SIGER или 69-B, и пример ответа</td></tr>' +
+      '</tbody></table></div>' +
+      '<p class="muted mr-source">Отдельного размера рынка KYB Мексики нет. Покрытие Trulioo, Moody’s и Kyckr по SIGER и 69-B не подтверждено. Источники: docs.sumsub.com/docs/business-verification-sources, gotrebol.com, nufi.mx, atlasmx.ai, docs.verifik.co, quienesquien.mx, pldcompliance.mx, 69b.mx.</p>' +
+    '</div>'
+  );
+}
+function renderMarketKyt(){
+  return renderMarketFrame(
+    'KYT',
+    'Know Your Transaction. Исследование провайдеров в этот выпуск не входит.',
+    '<div class="panel mr-prose"><h2>Граница блока</h2>' +
+      '<p>KYT начинается после того, как юрлицо уже прошло KYB: мониторинг операций, отклонение от профиля, связь платежа с уже проверенным клиентом. Это другой контракт и другой набор вендоров, чем реестр компании.</p>' +
+      '<p>Провайдеров KYT в воронку не засевали. Когда появится отдельное исследование, Product добавляет их в воронку кнопкой «Добавить вендора» и ведёт по тем же воротам: запрос, встреча, тестовый доступ, выборка, оценка, коммерция, решение.</p>' +
+      '<p><button class="btn-secondary" data-action="nav" data-view="vendor-funnel">Воронка вендоров</button></p>' +
+    '</div>'
+  );
+}
+function renderMarketAml(){
+  return renderMarketFrame(
+    'AML',
+    'Скрининг и кейсы. Полное исследование AML-платформ в этот выпуск не входит.',
+    '<div class="panel mr-prose"><h2>Граница блока</h2>' +
+      '<p>В этом хабе AML — санкции, PEP, adverse media и мексиканские налоговые списки, включая 69-B. Это не замена реестра и не замена цепочки владения. Quién es Quién, PLD Compliance и 69b.mx уже стоят в воронке со слоем «Списки».</p>' +
+      '<p>Глобальные скрининговые платформы вроде ComplyAdvantage, LSEG World-Check, LexisNexis и Dow Jones в шортлист этого выпуска не включались: по ним нет сверенного сравнения покрытия Мексики. Sumsub с марта 2026, по сообщению ComplyAdvantage, использует Mesh для скрининга. Это факт интеграции, не оценка качества.</p>' +
+      '<p><button class="btn-secondary" data-action="nav" data-view="vendor-funnel">Воронка вендоров</button></p>' +
+    '</div>'
+  );
+}
+
+function renderVendorTile(v){
+  const missing = vendorMissing(v);
+  const total = vendorGateFields(v.stage).length || 1;
+  const done = total - missing.length;
+  const pct = Math.round(done / total * 100);
+  const overdue = vendorOverdue(v);
+  const due = v.nextDue ? ('до ' + esc(v.nextDue)) : 'срок не назначен';
+  return '<article class="card-tile vendor-tile" draggable="true" data-vendor="'+esc(v.id)+'" data-action="open-vendor">' +
+    '<div class="tile-top"><span class="badge" style="background:#f4f4f5;color:#3f3f46;">'+esc(v.track)+'</span></div>' +
+    '<h3>'+esc(v.name)+'</h3>' +
+    '<p class="tile-desc">'+esc(v.nextAction || 'Нет следующего шага')+'</p>' +
+    '<div class="tile-meta"><span>'+esc(v.owner || 'Product')+'</span><span style="margin:0 6px;">·</span><span'+(overdue?' style="color:#dc2626;font-weight:600;"':'')+'>'+due+'</span></div>' +
+    '<div class="tile-progress"><div class="tile-progress-bar" style="width:'+pct+'%;'+(missing.length?'background:#d97706;':'')+'"></div></div>' +
+    '<span class="tile-progress-label">'+(missing.length ? ('Ворота: открыто ' + missing.length) : 'Ворота стадии закрыты')+'</span>' +
+  '</article>';
+}
+function renderVendorQueue(list){
+  const rows = list.filter(v=>{
+    if(v.stage === 'rejected') return false;
+    if(!String(v.nextAction||'').trim()) return true;
+    if(vendorOverdue(v)) return true;
+    if(v.stage !== 'shortlist' && vendorMissing(v).length) return true;
+    if(v.stage === 'shortlist') return true;
+    return false;
+  });
+  if(!rows.length) return '<div class="panel"><h2>Очередь Product</h2><p class="muted">Активных дыр нет. У каждого вендора есть следующий шаг, срок не просрочен, ворота текущей стадии закрыты.</p></div>';
+  return '<div class="panel"><h2>Очередь Product</h2>' +
+    '<p class="muted" style="margin:-6px 0 12px;">Сюда попадает шортлист, пустой следующий шаг, просроченный срок и незакрытые ворота текущей стадии.</p>' +
+    '<div class="hyp-table-wrap"><table class="hyp-table"><thead><tr><th>Вендор</th><th>Стадия</th><th>Почему в очереди</th><th>Следующий шаг</th><th>Срок</th></tr></thead><tbody>' +
+    rows.map(v=>{
+      const reasons = [];
+      if(v.stage === 'shortlist') reasons.push('Ещё не отправлен запрос');
+      if(!String(v.nextAction||'').trim()) reasons.push('Нет следующего шага');
+      if(vendorOverdue(v)) reasons.push('Срок прошёл');
+      const miss = vendorMissing(v);
+      if(v.stage !== 'shortlist' && miss.length) reasons.push('Открыты ворота: ' + miss.map(x=>x[1]).join(', '));
+      return '<tr data-action="open-vendor" data-vendor="'+esc(v.id)+'">' +
+        '<td><b>'+esc(v.name)+'</b><div class="muted">'+esc(v.track)+'</div></td>' +
+        '<td>'+esc(vendorStage(v.stage).label)+'</td>' +
+        '<td>'+esc(reasons.join(' · '))+'</td>' +
+        '<td>'+esc(v.nextAction || '—')+'</td>' +
+        '<td'+(vendorOverdue(v)?' style="color:#dc2626;font-weight:600;"':'')+'>'+esc(v.nextDue || '—')+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div></div>';
+}
+function renderVendorFunnel(app){
+  const q = (app.state.search || '').trim().toLowerCase();
+  const all = (app.store.vendors || []).filter(v=>{
+    if(!q) return true;
+    return [v.name, v.contact, v.why, v.track, v.nextAction, v.owner].join(' ').toLowerCase().indexOf(q) >= 0;
+  });
+  const track = app.state.vendorTrack || '';
+  const lane = app.state.vendorLane || 'active';
+  const tracked = all.filter(v=>!track || v.track === track);
+  const stages = VENDOR_STAGES.filter(s=>{
+    if(lane === 'active') return VENDOR_ACTIVE.indexOf(s.id) >= 0;
+    if(lane === 'terminal') return s.id === 'parked' || s.id === 'rejected';
+    return true;
+  });
+  const count = id => tracked.filter(v=>v.stage===id).length;
+  const meetings = all.filter(v=>v.meetingAt).length;
+  const access = all.filter(v=>v.accessEnv).length;
+  const samples = all.filter(v=>v.sampleN).length;
+  const decisions = all.filter(v=>v.decision).length;
+  const board = '<div class="kanban-board vendor-board">' + stages.map(st=>{
+    const items = tracked.filter(v=>v.stage===st.id);
+    return '<div class="kanban-col">' +
+      '<div class="kanban-col-head"><h3>'+esc(st.label)+'</h3><span class="count">'+items.length+'</span></div>' +
+      '<div class="kanban-hint">'+esc(st.hint)+'</div>' +
+      '<div class="kanban-col-body" data-vendor-dropzone data-vendor-stage="'+st.id+'">' +
+        items.map(renderVendorTile).join('') +
+      '</div></div>';
+  }).join('') + '</div>';
+  const trackPills = '<button class="btn-secondary'+(!track?' active':'')+'" data-action="vendor-track" data-track="">Все слои</button>' +
+    VENDOR_TRACKS.map(t=>'<button class="btn-secondary'+(track===t?' active':'')+'" data-action="vendor-track" data-track="'+esc(t)+'">'+esc(t)+'</button>').join('');
+  return '<div class="view-header"><h1>Воронка вендоров</h1>' +
+    '<p class="muted">Рабочий контур Product. Исследование лежит в KYB. Здесь только движение по стадиям. Карточку можно перетащить. Секреты доступа в хаб не записывать: достаточно среды, срока и того, что можно вызвать.</p></div>' +
+    '<div class="stat-grid">' +
+      '<div class="stat-tile"><div class="stat-value">'+all.length+'</div><div class="stat-label">В книге</div></div>' +
+      '<div class="stat-tile"><div class="stat-value">'+meetings+'</div><div class="stat-label">Встреча зафиксирована</div></div>' +
+      '<div class="stat-tile"><div class="stat-value">'+access+'</div><div class="stat-label">Тестовый доступ описан</div></div>' +
+      '<div class="stat-tile"><div class="stat-value">'+samples+' / '+decisions+'</div><div class="stat-label">Выборка записана / решение записано</div></div>' +
+    '</div>' +
+    '<div class="hyp-toolbar">' +
+      '<div class="filter-bar" style="margin:0;">' +
+        '<button class="btn-secondary'+(lane==='active'?' active':'')+'" data-action="vendor-lane" data-lane="active">Активный цикл</button>' +
+        '<button class="btn-secondary'+(lane==='terminal'?' active':'')+'" data-action="vendor-lane" data-lane="terminal">Пауза и отказ</button>' +
+        '<button class="btn-secondary'+(lane==='all'?' active':'')+'" data-action="vendor-lane" data-lane="all">Все стадии</button>' +
+        trackPills +
+      '</div>' +
+      '<button class="btn-primary" data-action="open-new-vendor">Добавить вендора</button>' +
+    '</div>' +
+    '<div class="panel" style="padding:12px 14px;"><div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+      VENDOR_ACTIVE.map(id=>'<span class="tag">'+esc(vendorStage(id).label)+' '+count(id)+'</span>').join('') +
+      '<span class="tag">Пауза '+count('parked')+'</span><span class="tag">Отказ '+count('rejected')+'</span>' +
+    '</div></div>' +
+    renderVendorQueue(tracked) +
+    board;
+}
+function vendorField(label, name, value, type){
+  const t = type || 'text';
+  return '<div class="field"><label>'+label+'</label><input type="'+t+'" name="'+name+'" value="'+esc(value||'')+'"></div>';
+}
+function renderVendorModal(v){
+  const history = (v.history||[]).slice().reverse().slice(0, 8);
+  const gates = vendorGateFields(v.stage).map(([key,label])=>{
+    const ok = String(v[key]||'').trim();
+    return '<div class="mini-stat-row"><span>'+esc(label)+'</span><b>'+(ok?'закрыто':'открыто')+'</b></div>';
+  }).join('');
+  return '<div class="modal-backdrop" data-action="close-modal"><div class="modal new-card-modal" style="max-width:760px;">' +
+    '<div class="modal-header"><h2 style="cursor:default;">'+esc(v.name)+'</h2><button class="icon-btn" data-action="close-modal">×</button></div>' +
+    '<form data-action="vendor-form" data-vendor="'+esc(v.id)+'">' +
+      '<div class="panel" style="margin-bottom:12px;"><h2>Ворота текущей стадии</h2>'+gates+'</div>' +
+      '<div class="field"><label>Стадия</label><select name="stage">' +
+        VENDOR_STAGES.map(s=>'<option value="'+s.id+'" '+(s.id===v.stage?'selected':'')+'>'+esc(s.label)+'</option>').join('') +
+      '</select></div>' +
+      '<div class="field"><label>Слой</label><select name="track">' +
+        VENDOR_TRACKS.map(t=>'<option value="'+esc(t)+'" '+(t===v.track?'selected':'')+'>'+esc(t)+'</option>').join('') +
+      '</select></div>' +
+      vendorField('Владелец', 'owner', v.owner) +
+      vendorField('Канал', 'contact', v.contact) +
+      '<div class="field"><label>Зачем в книге</label><textarea name="why" rows="2">'+esc(v.why||'')+'</textarea></div>' +
+      vendorField('Следующий шаг', 'nextAction', v.nextAction) +
+      vendorField('Срок шага', 'nextDue', v.nextDue, 'date') +
+      '<div class="panel"><h2>Встреча и доступ</h2>' +
+        vendorField('Дата запроса', 'outreachAt', v.outreachAt, 'date') +
+        vendorField('Дата встречи', 'meetingAt', v.meetingAt, 'date') +
+        vendorField('Кто был на встрече', 'meetingWho', v.meetingWho) +
+        vendorField('Имя источника, которое назвал вендор', 'sourceNamed', v.sourceNamed) +
+        vendorField('Среда доступа', 'accessEnv', v.accessEnv) +
+        vendorField('Доступ до', 'accessUntil', v.accessUntil, 'date') +
+        vendorField('Что можно вызвать', 'accessScope', v.accessScope) +
+      '</div>' +
+      '<div class="panel"><h2>Выборка, оценка, решение</h2>' +
+        vendorField('Размер выборки', 'sampleN', v.sampleN) +
+        vendorField('Доля совпадений', 'sampleHit', v.sampleHit) +
+        vendorField('Время ответа', 'sampleHours', v.sampleHours) +
+        vendorField('Какой режим закрывает', 'regime', v.regime) +
+        vendorField('Где лежат документы', 'custody', v.custody) +
+        vendorField('Цена завершённого кейса', 'priceCase', v.priceCase) +
+        vendorField('Что входит в предложение', 'quoteIncludes', v.quoteIncludes) +
+        vendorField('Что исключено', 'quoteExcludes', v.quoteExcludes) +
+        '<div class="field"><label>Решение</label><select name="decision">' +
+          ['','Партнёр','Второй источник','Пауза','Отказ'].map(opt=>'<option value="'+esc(opt)+'" '+(opt===(v.decision||'')?'selected':'')+'>'+(opt||'Не выбрано')+'</option>').join('') +
+        '</select></div>' +
+        '<div class="field"><label>Обоснование</label><textarea name="decisionWhy" rows="2">'+esc(v.decisionWhy||'')+'</textarea></div>' +
+        vendorField('Владелец договора', 'contractOwner', v.contractOwner) +
+        vendorField('Старт интеграции', 'integrateStart', v.integrateStart, 'date') +
+      '</div>' +
+      '<div class="field"><label>Заметки</label><textarea name="notes" rows="3">'+esc(v.notes||'')+'</textarea></div>' +
+      (history.length ? '<div class="panel"><h2>История</h2><div class="timeline">' + history.map(h=>'<div class="timeline-item"><b>'+esc(h.who||'')+'</b> · '+esc(h.text||'')+'<div class="muted">'+formatDate(h.at)+'</div></div>').join('') + '</div></div>' : '') +
+      '<div class="modal-footer"><button type="button" class="btn-danger" data-action="delete-vendor" data-vendor="'+esc(v.id)+'">Удалить</button><button type="submit" class="btn-primary">Сохранить</button></div>' +
+    '</form></div></div>';
+}
+function renderNewVendorModal(){
+  return '<div class="modal-backdrop" data-action="close-modal"><div class="modal new-card-modal">' +
+    '<div class="modal-header"><h2 style="cursor:default;">Новый вендор</h2><button class="icon-btn" data-action="close-modal">×</button></div>' +
+    '<form data-action="new-vendor-form">' +
+      vendorField('Название', 'name', '') +
+      '<div class="field"><label>Слой</label><select name="track">' + VENDOR_TRACKS.map(t=>'<option>'+esc(t)+'</option>').join('') + '</select></div>' +
+      vendorField('Канал', 'contact', '') +
+      '<div class="field"><label>Зачем в книге</label><textarea name="why" rows="3"></textarea></div>' +
+      '<div class="modal-footer"><span></span><button type="submit" class="btn-primary">Поставить в шортлист</button></div>' +
+    '</form></div></div>';
+}
+
 function renderAuthForm(app){
   const s = app.session || {};
   return '<form data-action="auth-form">' +
@@ -2136,7 +2553,11 @@ class App{
       pendingNewHyp: false,
       meeting: false,
       customTab: 'kz',
-      journeyVersion: 'cjm2'
+      journeyVersion: 'cjm2',
+      vendorTrack: '',
+      vendorLane: 'active',
+      openVendorId: null,
+      newVendorOpen: false
     };
     this.customDiagrams = {};
     CUSTOM_DIAGRAM_TABS.forEach(t=>{
@@ -2169,6 +2590,8 @@ class App{
     this.state.newHypOpen = false;
     this.state.authOpen = false;
     this.state.pendingNewHyp = false;
+    this.state.openVendorId = null;
+    this.state.newVendorOpen = false;
   }
   viewToDept(view){
     const map = {legal:'Legal', finance:'Finance', accounting:'Accounting', operations:'Operations', development:'Development', ceo:'CEO'};
@@ -2217,7 +2640,8 @@ class App{
   renderMain(){
     const main = document.getElementById('main-content');
     if(!main) return;
-    if(this.state.search && this.state.search.trim() && this.state.view !== 'hypotheses'){
+    const localSearchViews = ['hypotheses','market-kyb','market-kyt','market-aml','vendor-funnel'];
+    if(this.state.search && this.state.search.trim() && localSearchViews.indexOf(this.state.view) < 0){
       main.innerHTML = renderSearchResults(this);
       return;
     }
@@ -2261,6 +2685,10 @@ class App{
       case 'decisions':   main.innerHTML = renderKanban(this); break;
       case 'graph':        main.innerHTML = renderGraph(this); this.drawGraphEdges(); break;
       case 'scheme':        main.innerHTML = renderScheme(this); this.renderMermaidScheme(); this.renderCustomMermaid(); break;
+      case 'market-kyb':    main.innerHTML = renderMarketKyb(); break;
+      case 'market-kyt':    main.innerHTML = renderMarketKyt(); break;
+      case 'market-aml':    main.innerHTML = renderMarketAml(); break;
+      case 'vendor-funnel': main.innerHTML = renderVendorFunnel(this); break;
       default:              main.innerHTML = renderOverview(this);
     }
   }
@@ -2269,6 +2697,12 @@ class App{
     if(!root) return;
     if(this.state.authOpen){
       root.innerHTML = renderAuthModal(this);
+    } else if(this.state.newVendorOpen){
+      root.innerHTML = renderNewVendorModal();
+    } else if(this.state.openVendorId){
+      const vendor = this.store.getVendor(this.state.openVendorId);
+      if(!vendor){ this.state.openVendorId = null; root.innerHTML = ''; return; }
+      root.innerHTML = renderVendorModal(vendor);
     } else if(this.state.newHypOpen){
       root.innerHTML = renderNewHypModal(this);
     } else if(this.state.openHypId){
@@ -2388,6 +2822,33 @@ class App{
         this.setView(el.dataset.view);
         document.getElementById('app').classList.remove('sidebar-open');
         break;
+      case 'vendor-lane':
+        this.state.vendorLane = el.dataset.lane || 'active';
+        this.renderMain();
+        break;
+      case 'vendor-track':
+        this.state.vendorTrack = el.dataset.track || '';
+        this.renderMain();
+        break;
+      case 'open-vendor':
+        if(this._suppressVendorClick){ this._suppressVendorClick = false; return; }
+        this.state.openVendorId = el.dataset.vendor;
+        this.state.newVendorOpen = false;
+        this.renderModal();
+        break;
+      case 'open-new-vendor':
+        this.closeOverlays();
+        this.state.newVendorOpen = true;
+        this.renderModal();
+        break;
+      case 'delete-vendor': {
+        const id = el.dataset.vendor;
+        if(id && confirm('Удалить вендора из воронки?')){
+          this.state.openVendorId = null;
+          this.store.deleteVendor(id);
+        }
+        break;
+      }
       case 'toggle-meeting':
         document.body.classList.toggle('meeting-mode');
         this.state.meeting = document.body.classList.contains('meeting-mode');
@@ -2729,6 +3190,35 @@ class App{
       this.state.newHypOpen = false;
       this.state.openHypId = hyp.id;
       this.store.addHypothesis(hyp);
+    } else if(action === 'vendor-form'){
+      const vendor = this.store.getVendor(form.dataset.vendor);
+      if(!vendor) return;
+      const fd = new FormData(form);
+      const keys = ['stage','track','owner','contact','why','nextAction','nextDue','outreachAt','meetingAt','meetingWho','sourceNamed','accessEnv','accessUntil','accessScope','sampleN','sampleHit','sampleHours','regime','custody','priceCase','quoteIncludes','quoteExcludes','decision','decisionWhy','contractOwner','integrateStart','notes'];
+      const patch = {};
+      keys.forEach(k=>{ patch[k] = String(fd.get(k) || '').trim(); });
+      if(patch.stage !== vendor.stage){
+        pushVendorHistory(vendor, this.actorName(), 'Стадия: ' + vendorStage(patch.stage).label);
+      } else {
+        pushVendorHistory(vendor, this.actorName(), 'Карточка обновлена');
+      }
+      this.store.updateVendor(vendor.id, patch);
+    } else if(action === 'new-vendor-form'){
+      const fd = new FormData(form);
+      const name = String(fd.get('name') || '').trim();
+      if(!name){ alert('Укажите название'); return; }
+      const vendor = SeedData.vendor({
+        name,
+        track: String(fd.get('track') || 'Мексика'),
+        contact: String(fd.get('contact') || '').trim(),
+        why: String(fd.get('why') || '').trim(),
+        owner: this.currentUser() || 'Product',
+        nextAction: 'Назначить дату запроса демо'
+      });
+      pushVendorHistory(vendor, this.actorName(), 'Добавлен в шортлист');
+      this.state.newVendorOpen = false;
+      this.state.openVendorId = vendor.id;
+      this.store.addVendor(vendor);
     } else if(action === 'hyp-report-form'){
       if(!this.isProduct()) return;
       const hyp = this.store.getHypothesis(form.dataset.hyp);
@@ -2742,13 +3232,21 @@ class App{
   }
 
   handleKeydown(e){
-    if(e.key === 'Escape' && (this.state.openCardId || this.state.newCardOpen || this.state.openHypId || this.state.newHypOpen || this.state.authOpen)){
+    if(e.key === 'Escape' && (this.state.openCardId || this.state.newCardOpen || this.state.openHypId || this.state.newHypOpen || this.state.authOpen || this.state.openVendorId || this.state.newVendorOpen)){
       this.closeOverlays();
       this.renderModal();
     }
   }
 
   handleDragStart(e){
+    const vendorTile = e.target.closest('.vendor-tile');
+    if(vendorTile){
+      this._suppressVendorClick = true;
+      e.dataTransfer.setData('text/plain', 'vnd:'+vendorTile.dataset.vendor);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(()=>vendorTile.classList.add('dragging'), 0);
+      return;
+    }
     const hypTile = e.target.closest('.hyp-tile');
     if(hypTile){
       if(!this.isProduct()){ e.preventDefault(); return; }
@@ -2764,11 +3262,18 @@ class App{
     setTimeout(()=>tile.classList.add('dragging'), 0);
   }
   handleDragEnd(e){
+    if(e.target.closest('.vendor-tile')) setTimeout(()=>{ this._suppressVendorClick = false; }, 0);
     const tile = e.target.closest('.card-tile');
     if(tile) tile.classList.remove('dragging');
     document.querySelectorAll('.kanban-col-body.drag-over').forEach(el=>el.classList.remove('drag-over'));
   }
   handleDragOver(e){
+    const vendorZone = e.target.closest('[data-vendor-dropzone]');
+    if(vendorZone){
+      e.preventDefault();
+      vendorZone.classList.add('drag-over');
+      return;
+    }
     const hypZone = e.target.closest('[data-hyp-dropzone]');
     if(hypZone){
       if(!this.isProduct()) return;
@@ -2782,12 +3287,28 @@ class App{
     zone.classList.add('drag-over');
   }
   handleDragLeave(e){
+    const vendorZone = e.target.closest('[data-vendor-dropzone]');
+    if(vendorZone) vendorZone.classList.remove('drag-over');
     const hypZone = e.target.closest('[data-hyp-dropzone]');
     if(hypZone) hypZone.classList.remove('drag-over');
     const zone = e.target.closest('[data-dropzone]');
     if(zone) zone.classList.remove('drag-over');
   }
   handleDrop(e){
+    const vendorZone = e.target.closest('[data-vendor-dropzone]');
+    if(vendorZone){
+      e.preventDefault();
+      vendorZone.classList.remove('drag-over');
+      const raw = e.dataTransfer.getData('text/plain');
+      if(!raw || raw.indexOf('vnd:') !== 0) return;
+      const vendor = this.store.getVendor(raw.slice(4));
+      if(!vendor) return;
+      const next = vendorZone.dataset.vendorStage;
+      if(!next || next === vendor.stage) return;
+      pushVendorHistory(vendor, this.actorName(), 'Стадия: ' + vendorStage(next).label);
+      this.store.updateVendor(vendor.id, {stage: next});
+      return;
+    }
     const hypZone = e.target.closest('[data-hyp-dropzone]');
     if(hypZone){
       e.preventDefault();
