@@ -140,7 +140,7 @@
 </head>
 <body>
   <div class="page">
-    <a class="back" href="index.html">← Назад в Decision Hub</a>
+    <a class="back" href="index.html">← Назад в Product Innovation Hub</a>
     <h1>E1 · Экраны после эпика</h1>
     <p class="lede">
       Точные UI-мокапы: регистрация (legal gates) → ЛК Balance → Flow при недостатке средств.
@@ -249,7 +249,7 @@
       <div class="frame-body">
         <h2>Registration on hold</h2>
         <p class="sub">Онбординг временно недоступен для этой страны.</p>
-        <div class="alert warn"><div class="title">Country: United States (US)</div><div class="body">Единый hold UX. Hold включает бывший Allow Intl с рисками (US, CA, AU, ID, VN, NG, EG, TH, KE, PH…). Self-serve сейчас — только KZ.</div></div>
+        <div class="alert warn"><div class="title">Country: United States (US)</div><div class="body">Hold. Allow Intl = min-risk (CA, AU, NZ, JP, HK, SG, TW, IL, AE) + LATAM (MX, CL, CO, PE, AR, UY). BR и US — не в Allow.</div></div>
         <div class="btn ghost full">&lt; Back to country</div>
       </div>
     </div>
@@ -353,7 +353,7 @@
       { id: "reg-deny", group: "Registration", label: "3a. Country deny", step: "3/5",
         notes: ["EU/UK/CH — отказ", "Аккаунт не создаётся"] },
       { id: "reg-hold", group: "Registration", label: "3b. Country hold", step: "3/5",
-        notes: ["Hold = бывший Allow Intl + CN/ZA/TR… (вкл. US)", "Self-serve MVP: только KZ"] },
+        notes: ["Allow Intl = min-risk + LATAM", "US/BR и high-risk — Hold"] },
       { id: "reg-password", group: "Registration", label: "5. Set password", step: "5/5",
         notes: ["Только после legal gates", "Complete → ЛК"] },
       { id: "lk-balance", group: "Cabinet", label: "Balance", step: "LK",

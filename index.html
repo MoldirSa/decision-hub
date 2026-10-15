@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Decision Hub — Transactional Model Grooming</title>
+<title>Product Innovation Hub</title>
 <style>
 /* ============================================================
    RESET & DESIGN TOKENS
@@ -56,7 +56,7 @@ a{ color:inherit; }
 .app{ display:flex; height:100vh; overflow:hidden; }
 
 .sidebar{
-  width:240px; flex:0 0 240px;
+  width:280px; flex:0 0 280px;
   background:var(--sidebar-bg);
   border-right:1px solid var(--border);
   display:flex; flex-direction:column;
@@ -84,6 +84,10 @@ a{ color:inherit; }
 .nav-item:hover{ background:#eeeef0; color:var(--text); }
 .nav-item.active{ background:var(--text); color:#fff; }
 .nav-item.nav-sub{ padding-left:16px; font-size:13px; }
+.nav-item .nav-label{ white-space:normal; line-height:1.3; }
+.nav-item.nav-depth-1{ padding-left:28px; }
+.nav-item.nav-depth-2{ padding-left:44px; font-size:12.5px; }
+.nav-item.nav-ancestor{ background:#eeeef0; color:var(--text); }
 .nav-group{
   margin:16px 8px 4px;
   font-size:10.5px; font-weight:650; letter-spacing:.04em;
@@ -285,6 +289,21 @@ a{ color:inherit; }
 }
 .tab-bar{ display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
 .tab-bar .btn-mini.active{ background:var(--text); color:#fff; border-color:var(--text); }
+.j-tree,.j-tree ul{ list-style:none; margin:0; padding:0; }
+.j-tree{ margin:10px 0 14px; }
+.j-tree ul{ margin-left:14px; padding-left:12px; border-left:1px solid var(--border-strong); }
+.j-tree li{ margin:4px 0; }
+.j-tree-root{ font-weight:650; font-size:13.5px; }
+.j-tree-item{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:var(--radius-sm); padding:6px 10px; font-size:13px; text-align:left;
+}
+.j-tree-item:hover{ background:#f4f4f5; }
+.j-tree-item.active{ background:var(--text); color:#fff; border-color:var(--text); }
+.j-tree-item.active:hover{ background:var(--text); }
+.journey-node-panel{ border-top:1px solid var(--border); margin-top:8px; padding-top:14px; }
+.journey-node-panel h3{ font-size:15px; font-weight:650; margin-bottom:6px; }
+#journey-tree{ margin-top:16px; }
 
 /* ============================================================
    MODAL
@@ -424,7 +443,10 @@ body.meeting-mode .modal{ width:760px; }
 body.meeting-mode .modal-header h2{ font-size:24px; }
 body.meeting-mode .sidebar{ width:76px; }
 body.meeting-mode .sidebar .nav-label,
-body.meeting-mode .sidebar .brand-text{ display:none; }
+body.meeting-mode .sidebar .brand-text,
+body.meeting-mode .sidebar .nav-group{ display:none; }
+body.meeting-mode .nav-item.nav-depth-1,
+body.meeting-mode .nav-item.nav-depth-2{ padding-left:10px; }
 body.meeting-mode .stat-value{ font-size:30px; }
 
 /* ============================================================
@@ -432,17 +454,20 @@ body.meeting-mode .stat-value{ font-size:30px; }
    ============================================================ */
 @media (max-width:1024px){
   .sidebar{ width:72px; }
-  .sidebar .nav-label,.sidebar .brand-text{ display:none; }
+  .sidebar .nav-label,.sidebar .brand-text,.sidebar .nav-group{ display:none; }
+  .nav-item.nav-depth-1,.nav-item.nav-depth-2{ padding-left:10px; }
   .panel-grid{ grid-template-columns:1fr; }
   .modal-fields{ grid-template-columns:repeat(2,1fr); }
 }
 @media (max-width:720px){
   .mobile-only{ display:flex; }
   .sidebar{
-    position:fixed; top:0; left:0; height:100vh; width:230px; z-index:600;
+    position:fixed; top:0; left:0; height:100vh; width:280px; z-index:600;
     transform:translateX(-100%); transition:transform .18s ease;
   }
-  .sidebar .nav-label,.sidebar .brand-text{ display:block; }
+  .sidebar .nav-label,.sidebar .brand-text,.sidebar .nav-group{ display:block; }
+  .nav-item.nav-depth-1{ padding-left:28px; }
+  .nav-item.nav-depth-2{ padding-left:44px; }
   .app.sidebar-open .sidebar{ transform:translateX(0); }
   .topbar{ flex-wrap:wrap; }
   .search-wrap{ order:3; max-width:none; width:100%; }
@@ -505,10 +530,22 @@ const HYPOTHESIS_STATUSES = [
 ];
 const SESSION_KEY = 'decisionHub_session_v1';
 
+const JOURNEY_NODES = [
+  {id:'cab-bio', label:'cabinet.biometric', parent:null},
+  {id:'cab-kz',  label:'cabinet.biometric.kz', parent:'cab-bio'},
+  {id:'cab-mx',  label:'cabinet.mx.biometric.vision', parent:'cab-bio'},
+  {id:'cab-kg',  label:'cabinet.kg.biometric.vision', parent:'cab-bio'},
+];
+function journeyNode(id){ return JOURNEY_NODES.find(n=>n.id===id) || null; }
+
 const NAV_ITEMS = [
   {id:'overview',    label:'Overview',          icon:'⌂'},
   {id:'hypotheses',  label:'Гипотезы',          icon:'◇'},
   {id:'e1-ux',       label:'User journey',      icon:'▣'},
+  {id:'cab-bio',     label:'cabinet.biometric', icon:'·', depth:1},
+  {id:'cab-kz',      label:'cabinet.biometric.kz', icon:'·', depth:2},
+  {id:'cab-mx',      label:'cabinet.mx.biometric.vision', icon:'·', depth:2},
+  {id:'cab-kg',      label:'cabinet.kg.biometric.vision', icon:'·', depth:2},
   {id:'legal',       label:'Legal',             icon:'⚖'},
   {id:'finance',     label:'Finance',           icon:'$'},
   {id:'accounting',  label:'Accounting',        icon:'#'},
@@ -1532,7 +1569,7 @@ class ExportManager{
     ExportManager.download('decision-hub-export.json', JSON.stringify({cards, exportedAt:new Date().toISOString()}, null, 2), 'application/json');
   }
   static toMarkdown(cards){
-    let md = '# Decision Hub — Export\n\n_Exported: ' + new Date().toLocaleString() + '_\n\n';
+    let md = '# Product Innovation Hub — Export\n\n_Exported: ' + new Date().toLocaleString() + '_\n\n';
     DEPARTMENTS.forEach(dep=>{
       const list = cards.filter(c=>c.department===dep.id);
       if(!list.length) return;
@@ -1569,7 +1606,7 @@ class ExportManager{
     ExportManager.download('decision-hub-export.csv', csv, 'text/csv');
   }
   static toHTML(cards){
-    let body = '<h1>Decision Hub — Snapshot</h1><p>Exported: ' + new Date().toLocaleString() + '</p>';
+    let body = '<h1>Product Innovation Hub — Snapshot</h1><p>Exported: ' + new Date().toLocaleString() + '</p>';
     DEPARTMENTS.forEach(dep=>{
       const list = cards.filter(c=>c.department===dep.id);
       if(!list.length) return;
@@ -1583,7 +1620,7 @@ class ExportManager{
           + '</div>';
       });
     });
-    const html = '<!doctype html><html><head><meta charset="utf-8"><title>Decision Hub Snapshot</title></head><body style="font-family:sans-serif;max-width:900px;margin:40px auto;">' + body + '</body></html>';
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>Product Innovation Hub Snapshot</title></head><body style="font-family:sans-serif;max-width:900px;margin:40px auto;">' + body + '</body></html>';
     ExportManager.download('decision-hub-export.html', html, 'text/html');
   }
   static importJSON(file, onDone){
@@ -1614,7 +1651,8 @@ function renderNavItems(){
       if(group) html += '<div class="nav-group">'+esc(group)+'</div>';
       last = group;
     }
-    html += '<button class="nav-item'+(group?' nav-sub':'')+'" data-action="nav" data-view="'+n.id+'"><span class="nav-icon">'+n.icon+'</span><span class="nav-label">'+esc(n.label)+'</span></button>';
+    const depth = n.depth || 0;
+    html += '<button class="nav-item'+(group?' nav-sub':'')+(depth?' nav-depth-'+depth:'')+'" data-action="nav" data-view="'+n.id+'"><span class="nav-icon">'+n.icon+'</span><span class="nav-label">'+esc(n.label)+'</span></button>';
   });
   return html;
 }
@@ -1639,8 +1677,8 @@ function renderShell(){
   '<div class="app" id="app">' +
     '<aside class="sidebar" id="sidebar">' +
       '<div class="sidebar-brand">' +
-        '<div class="brand-mark">DH</div>' +
-        '<div class="brand-text"><div class="brand-title">Decision Hub</div><div class="brand-sub secondary-ui">Transactional Model Grooming</div></div>' +
+        '<div class="brand-mark">PI</div>' +
+        '<div class="brand-text"><div class="brand-title">Product Innovation Hub</div><div class="brand-sub secondary-ui">Product coordination</div></div>' +
       '</div>' +
       '<nav class="sidebar-nav" id="sidebar-nav">' + renderNavItems() + '</nav>' +
     '</aside>' +
@@ -2661,6 +2699,31 @@ function renderHypModal(h, app){
     '</div></div>';
 }
 
+function renderJourneyTree(app){
+  const selected = app.state.journeyNode || '';
+  const leaves = JOURNEY_NODES.filter(n=>n.parent==='cab-bio');
+  const node = journeyNode(selected);
+  let panel = '';
+  if(node && node.id==='cab-bio'){
+    panel = '<div class="journey-node-panel"><h3>cabinet.biometric</h3>' +
+      '<p class="muted">Родительская ветка. Три кабинета ниже — отдельные вкладки, без копии глобального journey.</p></div>';
+  } else if(node){
+    panel = '<div class="journey-node-panel"><h3>'+esc(node.label)+'</h3>' +
+      '<p class="muted">User journey → cabinet.biometric → '+esc(node.label)+'</p>' +
+      '<p>Отдельный user journey этого кабинета. Global user journey остаётся выше и сюда не копируется.</p></div>';
+  }
+  return '<section class="panel" id="journey-tree">' +
+    '<h2>User journey</h2>' +
+    '<ul class="j-tree"><li><div class="j-tree-root">User journey</div><ul><li>' +
+      '<button type="button" class="j-tree-item'+(selected==='cab-bio'?' active':'')+'" data-action="journey-node" data-node="cab-bio">cabinet.biometric</button>' +
+      '<ul>' + leaves.map(n=>
+        '<li><button type="button" class="j-tree-item'+(selected===n.id?' active':'')+'" data-action="journey-node" data-node="'+n.id+'">'+esc(n.label)+'</button></li>'
+      ).join('') + '</ul>' +
+    '</li></ul></li></ul>' +
+    panel +
+  '</section>';
+}
+
 function renderSearchResults(app){
   const list = SearchEngine.run(app.store.cards, {search: app.state.search, filters: app.state.filters});
   return '<div class="view-header"><h1>Search results for "'+esc(app.state.search)+'"</h1>' +
@@ -2690,6 +2753,7 @@ class App{
       meeting: false,
       customTab: 'kz',
       journeyVersion: 'cjm2',
+      journeyNode: '',
       vendorTrack: '',
       vendorLane: 'active',
       openVendorId: null,
@@ -2769,8 +2833,11 @@ class App{
     this.renderModal();
   }
   renderSidebarActive(){
+    const node = this.state.view === 'e1-ux' ? (this.state.journeyNode || '') : '';
     document.querySelectorAll('.nav-item').forEach(el=>{
-      el.classList.toggle('active', el.dataset.view === this.state.view);
+      const id = el.dataset.view;
+      el.classList.toggle('active', node ? id === node : id === this.state.view);
+      el.classList.toggle('nav-ancestor', !!(node && id === 'e1-ux'));
     });
   }
   renderMain(){
@@ -2795,21 +2862,27 @@ class App{
         main.innerHTML =
           '<div style="display:flex;flex-direction:column;height:calc(100vh - 64px);padding:0;margin:0;">' +
             '<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg-elevated);">' +
-              '<div><strong>User journey</strong> <span class="muted">' + cfg.caption + '</span></div>' +
+              '<div><strong>Global user journey, old</strong> <span class="muted">' + cfg.caption + '</span></div>' +
               '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
                 '<button type="button" class="btn-secondary' + (ver === 'cjm1' ? ' active' : '') + '" data-journey="cjm1">CJM 1 · current</button>' +
                 '<button type="button" class="btn-secondary' + (ver === 'cjm2' ? ' active' : '') + '" data-journey="cjm2">CJM 2 · Sprint 2 · 28 Sep–2 Oct</button>' +
                 '<a class="btn-secondary" href="' + cfg.src + '" target="_blank" rel="noopener">Open ↗</a>' +
               '</div>' +
             '</div>' +
-            '<iframe src="' + cfg.src + '" title="User journey" style="flex:1;width:100%;border:0;background:' + cfg.bg + ';"></iframe>' +
-          '</div>';
+            '<iframe src="' + cfg.src + '" title="Global user journey, old" style="flex:1;width:100%;border:0;background:' + cfg.bg + ';"></iframe>' +
+          '</div>' +
+          renderJourneyTree(this);
         main.querySelectorAll('[data-journey]').forEach((btn) => {
           btn.addEventListener('click', () => {
             this.state.journeyVersion = btn.getAttribute('data-journey');
             this.renderMain();
           });
         });
+        if(this._scrollJourneyTree){
+          this._scrollJourneyTree = false;
+          const tree = document.getElementById('journey-tree');
+          if(tree) tree.scrollIntoView({block:'start'});
+        }
         break;
       }
       case 'legal':       main.innerHTML = renderDepartment(this, 'Legal'); break;
@@ -2954,9 +3027,24 @@ class App{
     if(!el) return;
     const action = el.dataset.action;
     switch(action){
-      case 'nav':
-        this.setView(el.dataset.view);
+      case 'nav': {
+        const next = el.dataset.view;
+        if(journeyNode(next)){
+          this.state.journeyNode = next;
+          this._scrollJourneyTree = true;
+          this.setView('e1-ux');
+        } else {
+          if(next === 'e1-ux') this.state.journeyNode = '';
+          this.setView(next);
+        }
         document.getElementById('app').classList.remove('sidebar-open');
+        break;
+      }
+      case 'journey-node':
+        this.state.journeyNode = el.dataset.node || '';
+        this._scrollJourneyTree = false;
+        this.renderSidebarActive();
+        this.renderMain();
         break;
       case 'vendor-lane':
         this.state.vendorLane = el.dataset.lane || 'active';
